@@ -1,5 +1,6 @@
 import Link from "next/link";
 import AdminProductCatalogModal from "@/components/admin/AdminProductCatalogModal";
+import AdminDescriptionAssistant from "@/components/admin/AdminDescriptionAssistant";
 import AdminGalleryFilesField from "@/components/admin/AdminGalleryFilesField";
 import AdminProductLivePreview from "@/components/admin/AdminProductLivePreview";
 import AdminPricingDefaults from "@/components/admin/AdminPricingDefaults";
@@ -385,6 +386,8 @@ export default async function ProductAdminPage({
                       className="w-full rounded-2xl border border-[#d7dfe6] bg-white px-4 py-3 text-[15px] text-[#171717] outline-none transition-colors focus:border-[#17345c]"
                     />
                   </label>
+
+                  <AdminDescriptionAssistant formId="product-create-form" />
                 </div>
 
                 <SubmitButton
