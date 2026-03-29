@@ -6,6 +6,7 @@ import { useEffect, useMemo, useState } from "react";
 import { FiChevronRight, FiCreditCard, FiFilter, FiX } from "react-icons/fi";
 import { FaWhatsapp } from "react-icons/fa6";
 import { SiPix } from "react-icons/si";
+import { isUploadedImage } from "@/lib/image-utils";
 import type { CategoryDefinition, Product } from "@/lib/products";
 
 type CategoryListingViewProps = {
@@ -354,6 +355,7 @@ export default function CategoryListingView({
                       alt={product.name}
                       width={620}
                       height={760}
+                      unoptimized={isUploadedImage(product.image)}
                       className="h-[214px] w-full object-cover sm:h-[230px] xl:h-[214px]"
                     />
                   </Link>

@@ -6,6 +6,7 @@ import { useEffect, useRef, useState } from "react";
 import { FiChevronLeft, FiChevronRight, FiCreditCard } from "react-icons/fi";
 import { FaWhatsapp } from "react-icons/fa6";
 import { SiPix } from "react-icons/si";
+import { isUploadedImage } from "@/lib/image-utils";
 
 type HomeProductShelfProduct = {
   slug: string;
@@ -139,6 +140,7 @@ export default function HomeProductShelf({
                   alt={product.name}
                   width={620}
                   height={760}
+                  unoptimized={isUploadedImage(product.image)}
                   className="h-[295px] w-full object-cover sm:h-[340px] xl:h-[295px]"
                 />
               </Link>

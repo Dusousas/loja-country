@@ -6,6 +6,7 @@ import { useMemo, useState } from "react";
 import { FiChevronRight, FiCreditCard } from "react-icons/fi";
 import { FaWhatsapp } from "react-icons/fa6";
 import { SiPix } from "react-icons/si";
+import { isUploadedImage } from "@/lib/image-utils";
 import type { Product } from "@/lib/products";
 
 const STORE_WHATSAPP = "5537999514935";
@@ -53,6 +54,7 @@ export default function ProductDetailView({
                       alt={`${product.name} miniatura ${index + 1}`}
                       width={92}
                       height={118}
+                      unoptimized={isUploadedImage(image)}
                       className="h-[94px] w-[72px] object-cover lg:h-[96px] lg:w-[76px]"
                     />
                   </button>
@@ -68,6 +70,7 @@ export default function ProductDetailView({
                   width={980}
                   height={1180}
                   priority
+                  unoptimized={isUploadedImage(activeImage)}
                   className="mx-auto h-auto w-full max-w-[560px] object-cover"
                 />
               </div>
