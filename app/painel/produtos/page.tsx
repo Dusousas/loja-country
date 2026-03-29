@@ -13,7 +13,12 @@ import {
   panelPrimaryCategoryOptions,
   panelProductCategoryOptions,
 } from "@/lib/products";
-import { createProductFromPanel, logoutFromAdminPanel } from "./actions";
+import { getAnnouncementMessages } from "@/lib/site-settings";
+import {
+  createProductFromPanel,
+  logoutFromAdminPanel,
+  updateAnnouncementMessagesFromPanel,
+} from "./actions";
 
 export const dynamic = "force-dynamic";
 
@@ -47,13 +52,14 @@ export default async function ProductAdminPage({
       ? Math.floor(requestedPage)
       : 1;
 
-  const [summary, catalog] = await Promise.all([
+  const [summary, catalog, announcementMessages] = await Promise.all([
     getAdminDashboardSummary(),
     getAdminProductCatalog({
       page,
       pageSize: 8,
       query,
     }),
+    getAnnouncementMessages(),
   ]);
 
   return (
@@ -146,11 +152,60 @@ export default async function ProductAdminPage({
           </div>
         )}
 
+        {params.status === "announcements-updated" && (
+          <div className="mt-6 rounded-[22px] border border-[#c9dbef] bg-[#eff6fd] px-5 py-4 text-sm leading-6 text-[#1e5788]">
+            Avisos do topo atualizados com sucesso.
+          </div>
+        )}
+
         {params.status === "error" && params.message && (
           <div className="mt-6 rounded-[22px] border border-[#efc4c4] bg-[#fff1f1] px-5 py-4 text-sm leading-6 text-[#9e3d3d]">
             {params.message}
           </div>
         )}
+
+        <div className="mt-8 rounded-[30px] border border-[#e5ddd5] bg-white p-6 shadow-[0_16px_48px_rgba(23,23,23,0.05)] sm:p-8">
+          <div className="flex flex-wrap items-end justify-between gap-4">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-[0.22em] text-[#8f5c3d]">
+                Avisos do topo
+              </p>
+              <h2 className="mt-2 text-2xl font-semibold text-[#171717]">
+                Faixa animada do header
+              </h2>
+            </div>
+            <p className="max-w-md text-right text-[13px] leading-6 text-[#68788a]">
+              Adicione uma frase por linha para exibir na faixa preta que passa no topo do site.
+            </p>
+          </div>
+
+          <form action={updateAnnouncementMessagesFromPanel} className="mt-6 grid gap-4">
+            <label className="block">
+              <span className="mb-2 block text-sm font-semibold text-[#17345c]">
+                Frases da faixa
+              </span>
+              <textarea
+                name="announcementMessages"
+                defaultValue={announcementMessages.join("\n")}
+                rows={5}
+                className="w-full rounded-2xl border border-[#d7dfe6] bg-white px-4 py-3 text-[15px] leading-7 text-[#171717] outline-none transition-colors focus:border-[#17345c]"
+              />
+            </label>
+
+            <p className="text-[13px] leading-6 text-[#68788a]">
+              Exemplo: Frete gratis para todo o Brasil, 5% OFF a vista no Pix, novidades toda semana.
+            </p>
+
+            <div>
+              <SubmitButton
+                pendingLabel="Salvando avisos..."
+                className="inline-flex items-center justify-center rounded-2xl bg-[#17345c] px-5 py-3 text-sm font-semibold uppercase tracking-[0.18em] text-white transition-colors hover:bg-[#21497d]"
+              >
+                Salvar avisos do topo
+              </SubmitButton>
+            </div>
+          </form>
+        </div>
 
         <AdminProductCatalogModal
           products={catalog.products}

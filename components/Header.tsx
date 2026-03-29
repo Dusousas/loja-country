@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { FiMenu, FiPhoneCall, FiSearch, FiX } from "react-icons/fi";
 import { FaInstagram, FaWhatsapp } from "react-icons/fa6";
+import AnnouncementBar from "./AnnouncementBar";
 import Navbar, { navItems } from "./subc/Navbar";
 
 const socialActions = [
@@ -50,11 +51,7 @@ export default function Header() {
 
   return (
     <header className="border-b border-black/10 bg-white">
-      <section className="bg-[#171717] py-2">
-        <p className="px-4 text-center text-xs font-medium uppercase tracking-[0.24em] text-white sm:text-sm">
-          Frete gratis para todo o Brasil
-        </p>
-      </section>
+      <AnnouncementBar />
 
       <div className="lg:hidden">
         <section className="bg-white px-4 py-4 text-[#171717]">

@@ -10,6 +10,7 @@ import {
   type ProductFormInput,
   updateProductHomeSection,
 } from "@/lib/products";
+import { updateAnnouncementMessages } from "@/lib/site-settings";
 import { deleteUploadedAssets, saveUploadedImage } from "@/lib/uploads";
 
 function getString(formData: FormData, key: string) {
@@ -189,4 +190,30 @@ export async function deleteProductFromPanel(formData: FormData) {
 export async function logoutFromAdminPanel() {
   await clearAdminSession();
   redirect("/painel/login");
+}
+
+export async function updateAnnouncementMessagesFromPanel(formData: FormData) {
+  await requireAdminAuthentication();
+
+  try {
+    const messages = getString(formData, "announcementMessages")
+      .split(/\r?\n/)
+      .map((item) => item.trim())
+      .filter(Boolean);
+
+    await updateAnnouncementMessages(messages);
+    revalidatePath("/");
+    revalidatePath("/painel/produtos");
+
+    redirect("/painel/produtos?status=announcements-updated");
+  } catch (error) {
+    const message =
+      error instanceof Error
+        ? error.message
+        : "Nao foi possivel atualizar os avisos do topo.";
+
+    redirect(
+      `/painel/produtos?status=error&message=${encodeURIComponent(message)}`
+    );
+  }
 }
