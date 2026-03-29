@@ -5,15 +5,23 @@ import { FaInstagram, FaWhatsapp } from "react-icons/fa6";
 
 const navItems = [
   { href: "/", label: "Inicio" },
-  { href: "#masculino", label: "Masculino" },
-  { href: "#feminino", label: "Feminino" },
-  { href: "#infantil", label: "Infantil" },
-  { href: "#destaques", label: "Destaques" },
+  { href: "/categorias/masculino", label: "Masculino" },
+  { href: "/categorias/feminino", label: "Feminino" },
+  { href: "/categorias/infantil", label: "Infantil" },
+  { href: "/categorias", label: "Catalogo" },
 ];
 
 const socialItems = [
-  { href: "#instagram", label: "Instagram", icon: FaInstagram },
-  { href: "#whatsapp", label: "WhatsApp", icon: FaWhatsapp },
+  {
+    href: "https://www.instagram.com/starcountry__/",
+    label: "Instagram",
+    icon: FaInstagram,
+  },
+  {
+    href: "https://wa.me/5537999514935",
+    label: "WhatsApp",
+    icon: FaWhatsapp,
+  },
   { href: "mailto:contato@country.com", label: "Email", icon: FiMail },
 ];
 
@@ -41,13 +49,15 @@ export default function Footer() {
 
             <div className="flex flex-col gap-3 sm:flex-row">
               <Link
-                href="#whatsapp"
+                href="https://wa.me/5537999514935"
+                target="_blank"
+                rel="noopener noreferrer"
                 className="inline-flex items-center justify-center rounded-xl bg-white px-7 py-4 text-sm font-bold uppercase tracking-[0.08em] text-[#161211] transition-transform hover:-translate-y-0.5"
               >
                 Comprar Agora
               </Link>
               <Link
-                href="#categorias"
+                href="/categorias"
                 className="inline-flex items-center justify-center rounded-xl border border-white/18 px-7 py-4 text-sm font-bold uppercase tracking-[0.08em] text-white transition-colors hover:border-white/40 hover:bg-white/5"
               >
                 Ver Categorias
@@ -91,6 +101,8 @@ export default function Footer() {
                   <Link
                     key={label}
                     href={href}
+                    target={href.startsWith("http") ? "_blank" : undefined}
+                    rel={href.startsWith("http") ? "noopener noreferrer" : undefined}
                     aria-label={label}
                     className="flex size-11 items-center justify-center rounded-full border border-white/14 text-[19px] text-white transition-colors hover:border-[#b79a82] hover:bg-[#b79a82] hover:text-[#161211]"
                   >
@@ -136,10 +148,22 @@ export default function Footer() {
                   Suporte rapido para pedidos, tamanhos, disponibilidade e
                   compras direto no WhatsApp.
                 </p>
+                <p>
+                  WhatsApp e telefone:
+                  <br />
+                  <Link
+                    href="tel:+5537999514935"
+                    className="transition-colors hover:text-white"
+                  >
+                    +55 37 99951-4935
+                  </Link>
+                </p>
               </div>
 
               <Link
-                href="#whatsapp"
+                href="https://wa.me/5537999514935"
+                target="_blank"
+                rel="noopener noreferrer"
                 className="mt-7 inline-flex w-full items-center justify-center rounded-xl bg-white px-6 py-4 text-sm font-bold uppercase tracking-[0.08em] text-[#161211] transition-transform hover:-translate-y-0.5"
               >
                 Falar no WhatsApp

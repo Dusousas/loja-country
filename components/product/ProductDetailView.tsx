@@ -8,7 +8,7 @@ import { FaWhatsapp } from "react-icons/fa6";
 import { SiPix } from "react-icons/si";
 import type { Product } from "@/lib/products";
 
-const STORE_WHATSAPP = "5500000000000";
+const STORE_WHATSAPP = "5537999514935";
 
 type ProductDetailViewProps = {
   product: Product;

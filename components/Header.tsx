@@ -9,17 +9,21 @@ import Navbar, { navItems } from "./subc/Navbar";
 
 const socialActions = [
   {
-    href: "#whatsapp",
+    href: "https://wa.me/5537999514935",
     label: "WhatsApp",
     icon: FaWhatsapp,
+    target: "_blank",
+    rel: "noopener noreferrer",
   },
   {
-    href: "#instagram",
+    href: "https://www.instagram.com/starcountry__/",
     label: "Instagram",
     icon: FaInstagram,
+    target: "_blank",
+    rel: "noopener noreferrer",
   },
   {
-    href: "#telefone",
+    href: "tel:+5537999514935",
     label: "Telefone",
     icon: FiPhoneCall,
   },
@@ -149,6 +153,8 @@ export default function Header() {
                   <Link
                     key={label}
                     href={href}
+                    target={href.startsWith("http") ? "_blank" : undefined}
+                    rel={href.startsWith("http") ? "noopener noreferrer" : undefined}
                     aria-label={label}
                     title={label}
                     className="flex size-12 items-center justify-center rounded-full border border-black/12 text-[20px] text-[#171717] transition-colors hover:border-[#171717] hover:bg-[#f5f1ea]"
@@ -244,6 +250,8 @@ export default function Header() {
                 <Link
                   key={label}
                   href={href}
+                  target={href.startsWith("http") ? "_blank" : undefined}
+                  rel={href.startsWith("http") ? "noopener noreferrer" : undefined}
                   aria-label={label}
                   title={label}
                   onClick={closeMobileMenu}
