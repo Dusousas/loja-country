@@ -44,7 +44,7 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
     notFound();
   }
 
-  const products = getProductsForCategory(slug as CategorySlug);
+  const products = await getProductsForCategory(slug as CategorySlug);
 
   return <CategoryListingView category={category} products={products} />;
 }

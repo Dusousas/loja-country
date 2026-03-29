@@ -1,3 +1,6 @@
+import { mkdir, readFile, writeFile } from "node:fs/promises";
+import path from "node:path";
+
 export type CategorySlug =
   | "masculino"
   | "feminino"
@@ -41,6 +44,28 @@ export type CategoryDefinition = {
   title: string;
   description: string;
 };
+
+export type ProductFormInput = {
+  brand: string;
+  name: string;
+  cardTitle?: string;
+  slug?: string;
+  image: string;
+  gallery?: string[];
+  originalPrice: string;
+  price: string;
+  pixPrice: string;
+  pixLabel?: string;
+  installments?: string;
+  sizes: string[];
+  colorName: string;
+  colorSwatch: string;
+  primaryGroup: CategorySlug;
+  categorySlug: CategorySlug;
+  description: string;
+};
+
+const customProductsFilePath = path.join(process.cwd(), "data", "products.json");
 
 export const categoryDefinitions: CategoryDefinition[] = [
   {
@@ -129,11 +154,29 @@ export const categoryDefinitions: CategoryDefinition[] = [
   },
 ];
 
+export const panelPrimaryCategoryOptions = categoryDefinitions.filter((category) =>
+  ["masculino", "feminino", "infantil", "acessorios"].includes(category.slug)
+);
+
+export const panelProductCategoryOptions = categoryDefinitions.filter((category) =>
+  [
+    "acessorios",
+    "blusas",
+    "bones",
+    "calcas",
+    "casacos",
+    "chapeus",
+    "cintos",
+    "pijamas",
+    "vestidos",
+  ].includes(category.slug)
+);
+
 function productGallery() {
   return ["/img-teste.jpg", "/img-teste.jpg", "/img-teste.jpg", "/img-teste.jpg"];
 }
 
-export const products: Product[] = [
+export const defaultProducts: Product[] = [
   {
     slug: "calca-feminina-carpinteira-amaciada",
     brand: "Tex Team",
@@ -376,16 +419,166 @@ export const products: Product[] = [
   },
 ];
 
-export const promotionProducts = products.slice(0, 4);
+export const products = defaultProducts;
+export const promotionProducts = defaultProducts.slice(0, 4);
 
-export function getProductBySlug(slug: string) {
-  return products.find((product) => product.slug === slug);
+function normalizeText(value: string) {
+  return value.trim();
+}
+
+function slugify(value: string) {
+  return value
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}
+
+function uniqueValues<T>(values: T[]) {
+  return Array.from(new Set(values));
+}
+
+function sanitizeSwatch(value: string) {
+  const normalized = normalizeText(value);
+  return /^#[0-9a-fA-F]{6}$/.test(normalized) ? normalized : "#171717";
+}
+
+function getCategoryLabel(slug: CategorySlug) {
+  return (
+    categoryDefinitions.find((category) => category.slug === slug)?.label ?? slug
+  );
+}
+
+async function ensureCustomProductsFile() {
+  await mkdir(path.dirname(customProductsFilePath), { recursive: true });
+
+  try {
+    await readFile(customProductsFilePath, "utf8");
+  } catch {
+    await writeFile(customProductsFilePath, "[]", "utf8");
+  }
+}
+
+async function readCustomProductsFile() {
+  await ensureCustomProductsFile();
+  const raw = await readFile(customProductsFilePath, "utf8");
+
+  if (!raw.trim()) {
+    return [];
+  }
+
+  try {
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) ? (parsed as Product[]) : [];
+  } catch {
+    return [];
+  }
+}
+
+async function writeCustomProductsFile(productsToPersist: Product[]) {
+  await ensureCustomProductsFile();
+  await writeFile(
+    customProductsFilePath,
+    JSON.stringify(productsToPersist, null, 2),
+    "utf8"
+  );
+}
+
+export async function getCustomProducts() {
+  return readCustomProductsFile();
+}
+
+export async function getAllProducts() {
+  const customProducts = await getCustomProducts();
+  return [...defaultProducts, ...customProducts];
+}
+
+export async function getPromotionProducts() {
+  return (await getAllProducts()).slice(0, 4);
+}
+
+export async function getProductBySlug(slug: string) {
+  return (await getAllProducts()).find((product) => product.slug === slug);
 }
 
 export function getCategoryBySlug(slug: string) {
   return categoryDefinitions.find((category) => category.slug === slug);
 }
 
-export function getProductsForCategory(slug: CategorySlug) {
-  return products.filter((product) => product.navGroups.includes(slug));
+export async function getProductsForCategory(slug: CategorySlug) {
+  return (await getAllProducts()).filter((product) => product.navGroups.includes(slug));
+}
+
+export async function createProduct(input: ProductFormInput) {
+  const brand = normalizeText(input.brand);
+  const name = normalizeText(input.name);
+  const slug = slugify(input.slug || name);
+  const image = normalizeText(input.image);
+  const description = normalizeText(input.description);
+  const sizes = input.sizes.map(normalizeText).filter(Boolean);
+  const gallery = (input.gallery ?? []).map(normalizeText).filter(Boolean);
+
+  if (!brand || !name || !slug || !image || !description) {
+    throw new Error("Preencha os campos principais do produto.");
+  }
+
+  if (sizes.length === 0) {
+    throw new Error("Informe pelo menos um tamanho.");
+  }
+
+  const allProducts = await getAllProducts();
+
+  if (allProducts.some((product) => product.slug === slug)) {
+    throw new Error("Ja existe um produto com esse slug.");
+  }
+
+  const primaryGroup = input.primaryGroup;
+  const categorySlug = input.categorySlug;
+
+  if (
+    !panelPrimaryCategoryOptions.some((category) => category.slug === primaryGroup)
+  ) {
+    throw new Error("Categoria principal invalida.");
+  }
+
+  if (
+    !panelProductCategoryOptions.some((category) => category.slug === categorySlug)
+  ) {
+    throw new Error("Categoria do produto invalida.");
+  }
+
+  const productCategoryLabel = getCategoryLabel(categorySlug);
+  const primaryCategoryLabel = getCategoryLabel(primaryGroup);
+
+  const product: Product = {
+    slug,
+    brand,
+    name,
+    cardTitle: normalizeText(input.cardTitle || name),
+    image,
+    gallery: gallery.length > 0 ? gallery : [image, image, image, image],
+    originalPrice: normalizeText(input.originalPrice),
+    price: normalizeText(input.price),
+    pixPrice: normalizeText(input.pixPrice),
+    pixLabel: normalizeText(input.pixLabel || "5% OFF a vista no Pix"),
+    installments: normalizeText(
+      input.installments || "Parcelamento em ate 12x com juros"
+    ),
+    sizes,
+    color: {
+      name: normalizeText(input.colorName),
+      swatch: sanitizeSwatch(input.colorSwatch),
+    },
+    categoryTrail: ["Inicio", primaryCategoryLabel, productCategoryLabel, brand],
+    description,
+    navGroups: uniqueValues([primaryGroup, categorySlug]),
+    category: productCategoryLabel,
+  };
+
+  const customProducts = await getCustomProducts();
+  customProducts.push(product);
+  await writeCustomProductsFile(customProducts);
+
+  return product;
 }
