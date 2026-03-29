@@ -5,6 +5,11 @@ import { useEffect, useRef, useState } from "react";
 import { FiCreditCard } from "react-icons/fi";
 import { FaWhatsapp } from "react-icons/fa6";
 import { SiPix } from "react-icons/si";
+import {
+  calculatePixPrice,
+  defaultInstallmentsLabel,
+  defaultPixLabel,
+} from "@/lib/product-pricing";
 
 type HomeSection = "promocoes" | "chapeus" | "infantil";
 
@@ -133,7 +138,8 @@ export default function AdminProductLivePreview({
         price: String(formData.get("price") ?? "").trim() || initialState.price,
         originalPrice:
           String(formData.get("originalPrice") ?? "").trim() || initialState.originalPrice,
-        pixPrice: String(formData.get("pixPrice") ?? "").trim() || initialState.pixPrice,
+        pixPrice:
+          calculatePixPrice(String(formData.get("price") ?? "")) || initialState.pixPrice,
         colorName:
           String(formData.get("colorName") ?? "").trim() || initialState.colorName,
         colorSwatch: getValidSwatch(formData.get("colorSwatch")),
@@ -209,9 +215,13 @@ export default function AdminProductLivePreview({
               <span>{preview.pixPrice} com Pix</span>
             </p>
 
+            <p className="mt-1 text-[12px] font-semibold uppercase tracking-[0.12em] text-[#8f5c3d]">
+              {defaultPixLabel}
+            </p>
+
             <p className="mt-1 flex items-center justify-center gap-2 text-[13px] font-medium text-[#46566f] sm:text-[12px]">
               <FiCreditCard className="text-[15px]" />
-              <span>Parcelamento em ate 12x com juros</span>
+              <span>{defaultInstallmentsLabel}</span>
             </p>
           </div>
 

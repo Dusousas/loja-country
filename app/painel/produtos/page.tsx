@@ -1,6 +1,7 @@
 import Link from "next/link";
 import AdminProductCatalogModal from "@/components/admin/AdminProductCatalogModal";
 import AdminProductLivePreview from "@/components/admin/AdminProductLivePreview";
+import AdminPricingDefaults from "@/components/admin/AdminPricingDefaults";
 import ColorFields from "@/components/admin/ColorFields";
 import SubmitButton from "@/components/admin/SubmitButton";
 import { requireAdminAuthentication } from "@/lib/admin-auth";
@@ -318,7 +319,7 @@ export default async function ProductAdminPage({
                   <h3 className="text-lg font-semibold text-[#171717]">
                     Precos, cor e tamanhos
                   </h3>
-                  <div className="mt-5 grid gap-5 md:grid-cols-3">
+                  <div className="mt-5 grid gap-5 md:grid-cols-2">
                     <label className="block">
                       <span className="mb-2 block text-sm font-semibold text-[#17345c]">
                         Preco original
@@ -344,45 +345,10 @@ export default async function ProductAdminPage({
                         className="w-full rounded-2xl border border-[#d7dfe6] bg-white px-4 py-3 text-[15px] text-[#171717] outline-none transition-colors focus:border-[#17345c]"
                       />
                     </label>
-
-                    <label className="block">
-                      <span className="mb-2 block text-sm font-semibold text-[#17345c]">
-                        Preco Pix
-                      </span>
-                      <input
-                        type="text"
-                        name="pixPrice"
-                        required
-                        placeholder="R$161,91"
-                        className="w-full rounded-2xl border border-[#d7dfe6] bg-white px-4 py-3 text-[15px] text-[#171717] outline-none transition-colors focus:border-[#17345c]"
-                      />
-                    </label>
                   </div>
 
-                  <div className="mt-5 grid gap-5 md:grid-cols-2">
-                    <label className="block">
-                      <span className="mb-2 block text-sm font-semibold text-[#17345c]">
-                        Label do Pix
-                      </span>
-                      <input
-                        type="text"
-                        name="pixLabel"
-                        placeholder="5% OFF a vista no Pix"
-                        className="w-full rounded-2xl border border-[#d7dfe6] bg-white px-4 py-3 text-[15px] text-[#171717] outline-none transition-colors focus:border-[#17345c]"
-                      />
-                    </label>
-
-                    <label className="block">
-                      <span className="mb-2 block text-sm font-semibold text-[#17345c]">
-                        Parcelamento
-                      </span>
-                      <input
-                        type="text"
-                        name="installments"
-                        placeholder="Parcelamento em ate 12x com juros"
-                        className="w-full rounded-2xl border border-[#d7dfe6] bg-white px-4 py-3 text-[15px] text-[#171717] outline-none transition-colors focus:border-[#17345c]"
-                      />
-                    </label>
+                  <div className="mt-5">
+                    <AdminPricingDefaults formId="product-create-form" />
                   </div>
 
                   <ColorFields />

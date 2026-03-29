@@ -1,5 +1,10 @@
 import type { PoolClient } from "pg";
 import { getDbPool } from "@/lib/db";
+import {
+  calculatePixPrice,
+  defaultInstallmentsLabel,
+  defaultPixLabel,
+} from "@/lib/product-pricing";
 
 export type CategorySlug =
   | "masculino"
@@ -77,7 +82,7 @@ export type ProductFormInput = {
   gallery?: string[];
   originalPrice: string;
   price: string;
-  pixPrice: string;
+  pixPrice?: string;
   pixLabel?: string;
   installments?: string;
   sizes: string[];
@@ -897,16 +902,18 @@ export async function createProduct(input: ProductFormInput) {
     const cardTitle = normalizeText(input.cardTitle || name);
     const originalPrice = normalizeText(input.originalPrice);
     const price = normalizeText(input.price);
-    const pixPrice = normalizeText(input.pixPrice);
-    const pixLabel = normalizeText(input.pixLabel || "5% OFF a vista no Pix");
-    const installments = normalizeText(
-      input.installments || "Parcelamento em ate 12x com juros"
-    );
+    const pixPrice = normalizeText(input.pixPrice || calculatePixPrice(price));
+    const pixLabel = defaultPixLabel;
+    const installments = defaultInstallmentsLabel;
     const colorName = normalizeText(input.colorName);
     const colorSwatch = sanitizeSwatch(input.colorSwatch);
     const navGroups = uniqueValues([primaryGroup, categorySlug]);
     const categoryTrail = ["Inicio", primaryCategoryLabel, productCategoryLabel, brand];
     const finalGallery = gallery.length > 0 ? uniqueValues([image, ...gallery]) : [image, image, image, image];
+
+    if (!originalPrice || !price || !pixPrice) {
+      throw new Error("Informe os valores do produto para calcular o Pix.");
+    }
 
     const result = await client.query(
       `
