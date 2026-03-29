@@ -499,14 +499,24 @@ function parseJsonArray(value: unknown): string[] {
   return Array.isArray(value) ? value.filter((item): item is string => typeof item === "string") : [];
 }
 
+function getNormalizedGallery(image: string, gallery: string[]) {
+  const normalizedGallery = uniqueValues(
+    [image, ...gallery.map(normalizeText).filter(Boolean)].filter(Boolean)
+  );
+
+  return normalizedGallery.length > 0 ? normalizedGallery : [image];
+}
+
 function rowToProduct(row: Record<string, unknown>): Product {
+  const image = String(row.image);
+
   return {
     slug: String(row.slug),
     brand: String(row.brand),
     name: String(row.name),
     cardTitle: String(row.card_title),
-    image: String(row.image),
-    gallery: parseJsonArray(row.gallery),
+    image,
+    gallery: getNormalizedGallery(image, parseJsonArray(row.gallery)),
     originalPrice: String(row.original_price),
     price: String(row.price),
     pixPrice: String(row.pix_price),
@@ -824,7 +834,7 @@ export async function createProduct(input: ProductFormInput) {
     const colorSwatch = sanitizeSwatch(input.colorSwatch);
     const navGroups = uniqueValues([primaryGroup, categorySlug]);
     const categoryTrail = ["Inicio", primaryCategoryLabel, productCategoryLabel, brand];
-    const finalGallery = gallery.length > 0 ? uniqueValues([image, ...gallery]) : [image, image, image, image];
+    const finalGallery = getNormalizedGallery(image, gallery);
 
     if (!price || !pixPrice) {
       throw new Error("Informe os valores do produto para calcular o Pix.");

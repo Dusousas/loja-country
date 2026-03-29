@@ -1,5 +1,6 @@
 import Link from "next/link";
 import AdminProductCatalogModal from "@/components/admin/AdminProductCatalogModal";
+import AdminGalleryFilesField from "@/components/admin/AdminGalleryFilesField";
 import AdminProductLivePreview from "@/components/admin/AdminProductLivePreview";
 import AdminPricingDefaults from "@/components/admin/AdminPricingDefaults";
 import ColorFields from "@/components/admin/ColorFields";
@@ -300,18 +301,7 @@ export default async function ProductAdminPage({
                       />
                     </label>
 
-                    <label className="block">
-                      <span className="mb-2 block text-sm font-semibold text-[#17345c]">
-                        Galeria adicional
-                      </span>
-                      <input
-                        type="file"
-                        name="galleryFiles"
-                        accept="image/png,image/jpeg,image/webp,image/avif"
-                        multiple
-                        className="w-full rounded-2xl border border-dashed border-[#c9d4df] bg-white px-4 py-3 text-[14px] text-[#171717] file:mr-4 file:rounded-full file:border-0 file:bg-[#e7eef6] file:px-4 file:py-2 file:text-sm file:font-semibold file:text-[#17345c] hover:file:bg-[#dce7f2]"
-                      />
-                    </label>
+                    <AdminGalleryFilesField />
                   </div>
                 </div>
 
