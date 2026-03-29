@@ -201,7 +201,7 @@ export default function LinksPage() {
           <div ref={logoWrapRef} className="flex flex-col items-center">
             <div className="w-24 h-24 rounded-full bg-gradient-to-br from-[#c4ada7] to-[#8b6f68] flex items-center justify-center text-[#331f06] text-3xl font-bold shadow-xl border-4 border-white/20 overflow-hidden">
               <img
-                src="/logo1.png"
+                src="/logo_star.png"
                 alt="Logo Star Country"
                 className="w-full h-full object-cover"
                 draggable={false}
