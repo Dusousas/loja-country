@@ -31,6 +31,9 @@ export default function CategoryListingView({
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [selectedColors, setSelectedColors] = useState<string[]>([]);
   const [sortOrder, setSortOrder] = useState("older");
+  const shouldShowCategoryFilter = ["masculino", "feminino", "infantil"].includes(
+    category.slug
+  );
 
   const brands = useMemo(
     () => Array.from(new Set(products.map((product) => product.brand))).sort(),
@@ -60,6 +63,7 @@ export default function CategoryListingView({
       const matchBrand =
         selectedBrands.length === 0 || selectedBrands.includes(product.brand);
       const matchCategory =
+        !shouldShowCategoryFilter ||
         selectedCategories.length === 0 ||
         selectedCategories.includes(product.category);
       const matchColor =
@@ -83,7 +87,14 @@ export default function CategoryListingView({
       default:
         return result;
     }
-  }, [products, selectedBrands, selectedCategories, selectedColors, sortOrder]);
+  }, [
+    products,
+    selectedBrands,
+    selectedCategories,
+    selectedColors,
+    shouldShowCategoryFilter,
+    sortOrder,
+  ]);
 
   function toggleItem(
     value: string,
@@ -131,36 +142,38 @@ export default function CategoryListingView({
                   </div>
                 </div>
 
-                <div>
-                  <div className="mb-4 flex items-center justify-between">
-                    <h3 className="text-[18px] font-semibold text-[#171717]">
-                      Categoria
-                    </h3>
-                    <span className="text-[20px] text-[#171717]">-</span>
+                {shouldShowCategoryFilter && (
+                  <div>
+                    <div className="mb-4 flex items-center justify-between">
+                      <h3 className="text-[18px] font-semibold text-[#171717]">
+                        Categoria
+                      </h3>
+                      <span className="text-[20px] text-[#171717]">-</span>
+                    </div>
+                    <div className="max-h-[220px] space-y-3 overflow-auto pr-1">
+                      {categories.map((item) => (
+                        <label
+                          key={item}
+                          className="flex items-center gap-3 text-[15px] text-[#4e5968]"
+                        >
+                          <input
+                            type="checkbox"
+                            checked={selectedCategories.includes(item)}
+                            onChange={() =>
+                              toggleItem(
+                                item,
+                                selectedCategories,
+                                setSelectedCategories
+                              )
+                            }
+                            className="size-4 accent-[#17345c]"
+                          />
+                          <span>{item}</span>
+                        </label>
+                      ))}
+                    </div>
                   </div>
-                  <div className="max-h-[220px] space-y-3 overflow-auto pr-1">
-                    {categories.map((item) => (
-                      <label
-                        key={item}
-                        className="flex items-center gap-3 text-[15px] text-[#4e5968]"
-                      >
-                        <input
-                          type="checkbox"
-                          checked={selectedCategories.includes(item)}
-                          onChange={() =>
-                            toggleItem(
-                              item,
-                              selectedCategories,
-                              setSelectedCategories
-                            )
-                          }
-                          className="size-4 accent-[#17345c]"
-                        />
-                        <span>{item}</span>
-                      </label>
-                    ))}
-                  </div>
-                </div>
+                )}
 
                 <div>
                   <div className="mb-4 flex items-center justify-between">
