@@ -4,12 +4,14 @@ import ColorFields from "@/components/admin/ColorFields";
 import SubmitButton from "@/components/admin/SubmitButton";
 import { requireAdminAuthentication } from "@/lib/admin-auth";
 import {
-  getAdminProducts,
+  getAdminDashboardSummary,
+  getAdminProductCatalog,
   panelPrimaryCategoryOptions,
   panelProductCategoryOptions,
 } from "@/lib/products";
 import {
   createProductFromPanel,
+  deleteProductFromPanel,
   logoutFromAdminPanel,
   toggleHomeSectionFromPanel,
 } from "./actions";
@@ -17,7 +19,13 @@ import {
 export const dynamic = "force-dynamic";
 
 type ProductAdminPageProps = {
-  searchParams?: Promise<{ status?: string; slug?: string; message?: string }>;
+  searchParams?: Promise<{
+    status?: string;
+    slug?: string;
+    message?: string;
+    q?: string;
+    page?: string;
+  }>;
 };
 
 const homeSectionLabels = {
@@ -32,19 +40,43 @@ export default async function ProductAdminPage({
   await requireAdminAuthentication();
 
   const params = searchParams ? await searchParams : {};
-  const adminProducts = await getAdminProducts();
+  const query = typeof params.q === "string" ? params.q.trim() : "";
+  const requestedPage = Number(params.page);
+  const page = Number.isFinite(requestedPage) && requestedPage > 0
+    ? Math.floor(requestedPage)
+    : 1;
 
-  const showcaseCounts = {
-    promocoes: adminProducts.filter((product) =>
-      product.homeSections.includes("promocoes")
-    ).length,
-    chapeus: adminProducts.filter((product) =>
-      product.homeSections.includes("chapeus")
-    ).length,
-    infantil: adminProducts.filter((product) =>
-      product.homeSections.includes("infantil")
-    ).length,
-  };
+  const [summary, catalog] = await Promise.all([
+    getAdminDashboardSummary(),
+    getAdminProductCatalog({
+      page,
+      pageSize: 8,
+      query,
+    }),
+  ]);
+
+  const adminProducts = catalog.products;
+  const firstItemIndex =
+    catalog.totalCount === 0 ? 0 : (catalog.page - 1) * catalog.pageSize + 1;
+  const lastItemIndex =
+    catalog.totalCount === 0
+      ? 0
+      : Math.min(catalog.page * catalog.pageSize, catalog.totalCount);
+
+  function getCatalogHref(nextPage: number) {
+    const hrefParams = new URLSearchParams();
+
+    if (query) {
+      hrefParams.set("q", query);
+    }
+
+    if (nextPage > 1) {
+      hrefParams.set("page", String(nextPage));
+    }
+
+    const hrefQuery = hrefParams.toString();
+    return hrefQuery ? `/painel/produtos?${hrefQuery}` : "/painel/produtos";
+  }
 
   return (
     <section className="py-8 sm:py-10">
@@ -83,7 +115,7 @@ export default async function ProductAdminPage({
                 Produtos
               </p>
               <p className="mt-3 text-3xl font-semibold text-[#171717]">
-                {adminProducts.length}
+                {summary.totalProducts}
               </p>
             </div>
             <div className="rounded-[24px] border border-white/60 bg-white/85 p-5 backdrop-blur">
@@ -91,7 +123,7 @@ export default async function ProductAdminPage({
                 Promocoes
               </p>
               <p className="mt-3 text-3xl font-semibold text-[#171717]">
-                {Math.min(showcaseCounts.promocoes, 4)}/4
+                {Math.min(summary.showcaseCounts.promocoes, 4)}/4
               </p>
             </div>
             <div className="rounded-[24px] border border-white/60 bg-white/85 p-5 backdrop-blur">
@@ -99,7 +131,7 @@ export default async function ProductAdminPage({
                 Chapeus
               </p>
               <p className="mt-3 text-3xl font-semibold text-[#171717]">
-                {Math.min(showcaseCounts.chapeus, 4)}/4
+                {Math.min(summary.showcaseCounts.chapeus, 4)}/4
               </p>
             </div>
             <div className="rounded-[24px] border border-white/60 bg-white/85 p-5 backdrop-blur">
@@ -107,7 +139,7 @@ export default async function ProductAdminPage({
                 Infantil
               </p>
               <p className="mt-3 text-3xl font-semibold text-[#171717]">
-                {Math.min(showcaseCounts.infantil, 4)}/4
+                {Math.min(summary.showcaseCounts.infantil, 4)}/4
               </p>
             </div>
           </div>
@@ -129,6 +161,12 @@ export default async function ProductAdminPage({
         {params.status === "updated" && (
           <div className="mt-6 rounded-[22px] border border-[#c9dbef] bg-[#eff6fd] px-5 py-4 text-sm leading-6 text-[#1e5788]">
             Destaque da home atualizado com sucesso.
+          </div>
+        )}
+
+        {params.status === "deleted" && (
+          <div className="mt-6 rounded-[22px] border border-[#f0d2d2] bg-[#fff3f3] px-5 py-4 text-sm leading-6 text-[#8a3030]">
+            Produto removido com sucesso.
           </div>
         )}
 
@@ -428,7 +466,7 @@ export default async function ProductAdminPage({
           </div>
 
           <div className="rounded-[30px] border border-[#e5ddd5] bg-white p-6 shadow-[0_16px_48px_rgba(23,23,23,0.05)] sm:p-8">
-            <div className="flex items-end justify-between gap-4">
+            <div className="flex flex-wrap items-end justify-between gap-4">
               <div>
                 <p className="text-xs font-semibold uppercase tracking-[0.22em] text-[#8f5c3d]">
                   Catalogo
@@ -437,15 +475,59 @@ export default async function ProductAdminPage({
                   Produtos cadastrados
                 </h2>
               </div>
-              <p className="text-[13px] leading-6 text-[#68788a]">
-                Clique nos botoes para destacar ou remover da home.
-              </p>
+              <div className="text-right text-[13px] leading-6 text-[#68788a]">
+                <p>Busque, pagine e remova produtos sem deixar o painel gigante.</p>
+                <p>
+                  Exibindo {firstItemIndex}-{lastItemIndex} de {catalog.totalCount}.
+                </p>
+              </div>
+            </div>
+
+            <div className="mt-6 rounded-[24px] border border-[#ece3da] bg-[#fcfbfa] p-4">
+              <form className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto_auto]">
+                <label className="block">
+                  <span className="mb-2 block text-xs font-semibold uppercase tracking-[0.18em] text-[#8f5c3d]">
+                    Buscar no catalogo
+                  </span>
+                  <input
+                    type="search"
+                    name="q"
+                    defaultValue={query}
+                    placeholder="Nome, marca, slug ou categoria"
+                    className="w-full rounded-2xl border border-[#d7dfe6] bg-white px-4 py-3 text-[15px] text-[#171717] outline-none transition-colors focus:border-[#17345c]"
+                  />
+                </label>
+
+                <div className="flex items-end">
+                  <button
+                    type="submit"
+                    className="inline-flex w-full items-center justify-center rounded-2xl bg-[#17345c] px-5 py-3 text-xs font-semibold uppercase tracking-[0.18em] text-white transition-colors hover:bg-[#21497d] sm:w-auto"
+                  >
+                    Buscar
+                  </button>
+                </div>
+
+                <div className="flex items-end">
+                  <Link
+                    href="/painel/produtos"
+                    className="inline-flex w-full items-center justify-center rounded-2xl border border-[#d8c9bb] bg-white px-5 py-3 text-xs font-semibold uppercase tracking-[0.18em] text-[#17345c] transition-colors hover:border-[#17345c] sm:w-auto"
+                  >
+                    Limpar
+                  </Link>
+                </div>
+              </form>
             </div>
 
             <div className="mt-6 space-y-4">
-              {adminProducts.length === 0 && (
+              {catalog.totalCount === 0 && !query && (
                 <div className="rounded-2xl border border-dashed border-[#d9d0c7] bg-[#fcfbfa] px-5 py-8 text-sm leading-6 text-[#536273]">
                   Nenhum produto cadastrado ainda.
+                </div>
+              )}
+
+              {catalog.totalCount === 0 && query && (
+                <div className="rounded-2xl border border-dashed border-[#d9d0c7] bg-[#fcfbfa] px-5 py-8 text-sm leading-6 text-[#536273]">
+                  Nenhum produto encontrado para <span className="font-semibold">{query}</span>.
                 </div>
               )}
 
@@ -478,12 +560,27 @@ export default async function ProductAdminPage({
                           </p>
                         </div>
 
-                        <Link
-                          href={`/produtos/${product.slug}`}
-                          className="inline-flex rounded-full border border-[#d8c9bb] bg-white px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.14em] text-[#17345c] transition-colors hover:border-[#17345c]"
-                        >
-                          Ver produto
-                        </Link>
+                        <div className="flex flex-wrap gap-2">
+                          <Link
+                            href={`/produtos/${product.slug}`}
+                            className="inline-flex rounded-full border border-[#d8c9bb] bg-white px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.14em] text-[#17345c] transition-colors hover:border-[#17345c]"
+                          >
+                            Ver produto
+                          </Link>
+
+                          <form action={deleteProductFromPanel}>
+                            <input type="hidden" name="productId" value={product.id} />
+                            <input type="hidden" name="page" value={catalog.page} />
+                            <input type="hidden" name="query" value={query} />
+                            <SubmitButton
+                              pendingLabel="Removendo..."
+                              confirmMessage={`Remover "${product.name}" da loja e do painel?`}
+                              className="inline-flex rounded-full border border-[#e1b8b8] bg-white px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.14em] text-[#a33d3d] transition-colors hover:border-[#a33d3d] hover:bg-[#fff5f5]"
+                            >
+                              Excluir produto
+                            </SubmitButton>
+                          </form>
+                        </div>
                       </div>
 
                       <div className="mt-4 flex flex-wrap gap-2">
@@ -511,6 +608,8 @@ export default async function ProductAdminPage({
                             <form key={section} action={toggleHomeSectionFromPanel}>
                               <input type="hidden" name="productId" value={product.id} />
                               <input type="hidden" name="section" value={section} />
+                              <input type="hidden" name="page" value={catalog.page} />
+                              <input type="hidden" name="query" value={query} />
                               <input
                                 type="hidden"
                                 name="enabled"
@@ -537,6 +636,40 @@ export default async function ProductAdminPage({
                 </article>
               ))}
             </div>
+
+            {catalog.totalPages > 1 && (
+              <div className="mt-6 flex flex-wrap items-center justify-between gap-4 rounded-[24px] border border-[#ece3da] bg-[#fcfbfa] px-4 py-4">
+                <p className="text-sm text-[#536273]">
+                  Pagina {catalog.page} de {catalog.totalPages}
+                </p>
+
+                <div className="flex flex-wrap items-center gap-2">
+                  <Link
+                    href={getCatalogHref(catalog.page - 1)}
+                    aria-disabled={catalog.page <= 1}
+                    className={`inline-flex items-center justify-center rounded-full px-4 py-2 text-xs font-semibold uppercase tracking-[0.16em] ${
+                      catalog.page <= 1
+                        ? "pointer-events-none border border-[#e7ddd3] bg-white text-[#b6b0a9]"
+                        : "border border-[#d8c9bb] bg-white text-[#17345c] transition-colors hover:border-[#17345c]"
+                    }`}
+                  >
+                    Anterior
+                  </Link>
+
+                  <Link
+                    href={getCatalogHref(catalog.page + 1)}
+                    aria-disabled={catalog.page >= catalog.totalPages}
+                    className={`inline-flex items-center justify-center rounded-full px-4 py-2 text-xs font-semibold uppercase tracking-[0.16em] ${
+                      catalog.page >= catalog.totalPages
+                        ? "pointer-events-none border border-[#e7ddd3] bg-white text-[#b6b0a9]"
+                        : "border border-[#17345c] bg-[#17345c] text-white transition-colors hover:bg-[#21497d]"
+                    }`}
+                  >
+                    Proxima
+                  </Link>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>

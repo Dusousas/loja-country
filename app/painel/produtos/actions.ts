@@ -5,11 +5,12 @@ import { revalidatePath } from "next/cache";
 import { clearAdminSession, requireAdminAuthentication } from "@/lib/admin-auth";
 import {
   createProduct,
+  deleteProduct,
   type HomeSection,
   type ProductFormInput,
   updateProductHomeSection,
 } from "@/lib/products";
-import { saveUploadedImage } from "@/lib/uploads";
+import { deleteUploadedAssets, saveUploadedImage } from "@/lib/uploads";
 
 function getString(formData: FormData, key: string) {
   const value = formData.get(key);
@@ -36,6 +37,29 @@ function getUploadedFiles(formData: FormData, key: string) {
   return formData
     .getAll(key)
     .filter((value): value is File => value instanceof File && value.size > 0);
+}
+
+function buildPanelUrl(formData: FormData, extraParams?: Record<string, string>) {
+  const params = new URLSearchParams();
+  const query = getString(formData, "query");
+  const page = getString(formData, "page");
+
+  if (query) {
+    params.set("q", query);
+  }
+
+  if (page) {
+    params.set("page", page);
+  }
+
+  for (const [key, value] of Object.entries(extraParams ?? {})) {
+    if (value) {
+      params.set(key, value);
+    }
+  }
+
+  const queryString = params.toString();
+  return queryString ? `/painel/produtos?${queryString}` : "/painel/produtos";
 }
 
 function revalidateProductExperience(slug: string, navGroups: string[]) {
@@ -119,12 +143,45 @@ export async function toggleHomeSectionFromPanel(formData: FormData) {
 
     const product = await updateProductHomeSection(productId, section, enabled);
     revalidateProductExperience(product.slug, product.navGroups);
-    redirect("/painel/produtos?status=updated");
+    redirect(buildPanelUrl(formData, { status: "updated" }));
   } catch (error) {
     const message =
       error instanceof Error ? error.message : "Nao foi possivel atualizar a vitrine.";
 
-    redirect(`/painel/produtos?status=error&message=${encodeURIComponent(message)}`);
+    redirect(
+      buildPanelUrl(formData, {
+        status: "error",
+        message,
+      })
+    );
+  }
+}
+
+export async function deleteProductFromPanel(formData: FormData) {
+  await requireAdminAuthentication();
+
+  try {
+    const productId = Number(getString(formData, "productId"));
+
+    if (!Number.isFinite(productId) || productId <= 0) {
+      throw new Error("Produto invalido.");
+    }
+
+    const product = await deleteProduct(productId);
+    await deleteUploadedAssets([product.image, ...product.gallery]);
+    revalidateProductExperience(product.slug, product.navGroups);
+
+    redirect(buildPanelUrl(formData, { status: "deleted" }));
+  } catch (error) {
+    const message =
+      error instanceof Error ? error.message : "Nao foi possivel remover o produto.";
+
+    redirect(
+      buildPanelUrl(formData, {
+        status: "error",
+        message,
+      })
+    );
   }
 }
 

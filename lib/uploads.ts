@@ -1,5 +1,5 @@
 import { randomUUID } from "node:crypto";
-import { mkdir, writeFile } from "node:fs/promises";
+import { mkdir, unlink, writeFile } from "node:fs/promises";
 import path from "node:path";
 
 const uploadDirectory = path.join(process.cwd(), "data", "uploads");
@@ -47,4 +47,30 @@ export async function saveUploadedImage(file: File, prefix: string) {
   await writeFile(filePath, buffer);
 
   return `/uploads/${fileName}`;
+}
+
+export async function deleteUploadedAssets(assetPaths: string[]) {
+  const uploadedAssets = Array.from(
+    new Set(
+      assetPaths
+        .filter((assetPath) => assetPath.startsWith("/uploads/"))
+        .map((assetPath) => path.basename(assetPath))
+    )
+  );
+
+  await Promise.all(
+    uploadedAssets.map(async (fileName) => {
+      try {
+        await unlink(path.join(uploadDirectory, fileName));
+      } catch (error) {
+        if (!(error instanceof Error) || "code" in error === false) {
+          throw error;
+        }
+
+        if ((error as NodeJS.ErrnoException).code !== "ENOENT") {
+          throw error;
+        }
+      }
+    })
+  );
 }

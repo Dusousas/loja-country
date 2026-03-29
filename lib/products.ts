@@ -47,6 +47,20 @@ export type AdminProduct = Product & {
   updatedAt: string;
 };
 
+export type AdminDashboardSummary = {
+  totalProducts: number;
+  showcaseCounts: Record<HomeSection, number>;
+};
+
+export type AdminProductCatalogResult = {
+  products: AdminProduct[];
+  page: number;
+  pageSize: number;
+  totalCount: number;
+  totalPages: number;
+  query: string;
+};
+
 export type CategoryDefinition = {
   slug: CategorySlug;
   label: string;
@@ -451,6 +465,10 @@ function normalizeText(value: string) {
   return value.trim();
 }
 
+function normalizeSearchTerm(value: string) {
+  return normalizeText(value).slice(0, 120);
+}
+
 function slugify(value: string) {
   return value
     .normalize("NFD")
@@ -694,6 +712,99 @@ export async function getAdminProducts() {
   });
 }
 
+export async function getAdminDashboardSummary(): Promise<AdminDashboardSummary> {
+  return queryProducts(async (client) => {
+    const result = await client.query<{
+      total_products: string;
+      promocoes_count: string;
+      chapeus_count: string;
+      infantil_count: string;
+    }>(`
+      SELECT
+        COUNT(*)::text AS total_products,
+        COUNT(*) FILTER (WHERE show_in_promocoes = true)::text AS promocoes_count,
+        COUNT(*) FILTER (WHERE show_in_chapeus = true)::text AS chapeus_count,
+        COUNT(*) FILTER (WHERE show_in_infantil = true)::text AS infantil_count
+      FROM products
+    `);
+
+    const row = result.rows[0];
+
+    return {
+      totalProducts: Number(row?.total_products ?? "0"),
+      showcaseCounts: {
+        promocoes: Number(row?.promocoes_count ?? "0"),
+        chapeus: Number(row?.chapeus_count ?? "0"),
+        infantil: Number(row?.infantil_count ?? "0"),
+      },
+    };
+  });
+}
+
+export async function getAdminProductCatalog(options?: {
+  page?: number;
+  pageSize?: number;
+  query?: string;
+}): Promise<AdminProductCatalogResult> {
+  return queryProducts(async (client) => {
+    const requestedPageSize = Math.trunc(options?.pageSize ?? 8);
+    const pageSize = Math.min(Math.max(requestedPageSize || 8, 1), 24);
+    const query = normalizeSearchTerm(options?.query ?? "");
+    const searchTerm = query ? `%${query}%` : "";
+    const filters: string[] = [];
+    const values: string[] = [];
+
+    if (query) {
+      values.push(searchTerm);
+      const placeholder = `$${values.length}`;
+      filters.push(
+        `(
+          name ILIKE ${placeholder}
+          OR brand ILIKE ${placeholder}
+          OR slug ILIKE ${placeholder}
+          OR category ILIKE ${placeholder}
+        )`
+      );
+    }
+
+    const whereClause = filters.length > 0 ? `WHERE ${filters.join(" AND ")}` : "";
+    const countResult = await client.query<{ total: string }>(
+      `SELECT COUNT(*)::text AS total FROM products ${whereClause}`,
+      values
+    );
+
+    const totalCount = Number(countResult.rows[0]?.total ?? "0");
+    const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
+    const requestedPage = Math.max(Math.trunc(options?.page ?? 1) || 1, 1);
+    const page = Math.min(requestedPage, totalPages);
+    const offset = (page - 1) * pageSize;
+
+    const dataValues = [...values, String(pageSize), String(offset)];
+    const limitPlaceholder = `$${dataValues.length - 1}`;
+    const offsetPlaceholder = `$${dataValues.length}`;
+    const result = await client.query(
+      `
+        SELECT *
+        FROM products
+        ${whereClause}
+        ORDER BY created_at DESC, id DESC
+        LIMIT ${limitPlaceholder}::int
+        OFFSET ${offsetPlaceholder}::int
+      `,
+      dataValues
+    );
+
+    return {
+      products: result.rows.map((row) => rowToAdminProduct(row)),
+      page,
+      pageSize,
+      totalCount,
+      totalPages,
+      query,
+    };
+  });
+}
+
 export async function getAllProducts() {
   return queryProducts(async (client) => {
     const result = await client.query("SELECT * FROM products ORDER BY created_at DESC, id DESC");
@@ -895,6 +1006,21 @@ export async function updateProductHomeSection(
 
     if (enabled) {
       await pruneHomeSection(client, section);
+    }
+
+    return rowToAdminProduct(result.rows[0]);
+  });
+}
+
+export async function deleteProduct(productId: number) {
+  return queryProducts(async (client) => {
+    const result = await client.query(
+      "DELETE FROM products WHERE id = $1 RETURNING *",
+      [productId]
+    );
+
+    if (!result.rows[0]) {
+      throw new Error("Produto nao encontrado.");
     }
 
     return rowToAdminProduct(result.rows[0]);
