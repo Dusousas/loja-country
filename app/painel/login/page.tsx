@@ -38,10 +38,10 @@ export default async function AdminLoginPage({ searchParams }: LoginPageProps) {
             <div className="mt-8 grid gap-4 sm:grid-cols-2">
               <div className="rounded-2xl border border-white/10 bg-white/6 p-5">
                 <p className="text-xs uppercase tracking-[0.2em] text-white/60">
-                  Persistencia
+                  Banco
                 </p>
                 <p className="mt-3 text-sm leading-6 text-white/82">
-                  Os produtos cadastrados vao para <code>data/products.json</code>.
+                  Os produtos ficam no Postgres e as imagens no volume <code>/app/data</code>.
                 </p>
               </div>
               <div className="rounded-2xl border border-white/10 bg-white/6 p-5">

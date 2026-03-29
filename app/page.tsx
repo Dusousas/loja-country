@@ -8,6 +8,8 @@ import LineIcons from "@/components/LineIcons";
 import Promocao from "@/components/Promocao";
 import Sex from "@/components/Sex";
 
+export const dynamic = "force-dynamic";
+
 export default function Home() {
   return (
     <>

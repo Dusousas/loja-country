@@ -1,19 +1,13 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import ProductDetailView from "@/components/product/ProductDetailView";
-import { getAllProducts, getProductBySlug } from "@/lib/products";
+import { getProductBySlug } from "@/lib/products";
+
+export const dynamic = "force-dynamic";
 
 type ProductPageProps = {
   params: Promise<{ slug: string }>;
 };
-
-export async function generateStaticParams() {
-  const products = await getAllProducts();
-
-  return products.map((product) => ({
-    slug: product.slug,
-  }));
-}
 
 export async function generateMetadata({
   params,

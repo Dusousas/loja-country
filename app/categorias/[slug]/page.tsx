@@ -2,21 +2,16 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import CategoryListingView from "@/components/category/CategoryListingView";
 import {
-  categoryDefinitions,
   getCategoryBySlug,
   getProductsForCategory,
   type CategorySlug,
 } from "@/lib/products";
 
+export const dynamic = "force-dynamic";
+
 type CategoryPageProps = {
   params: Promise<{ slug: string }>;
 };
-
-export async function generateStaticParams() {
-  return categoryDefinitions.map((category) => ({
-    slug: category.slug,
-  }));
-}
 
 export async function generateMetadata({
   params,

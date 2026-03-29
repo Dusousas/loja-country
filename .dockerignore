@@ -13,3 +13,4 @@ yarn-error.log*
 .env*
 docker-compose*
 compose.yml
+data/uploads
