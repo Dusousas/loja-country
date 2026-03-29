@@ -100,7 +100,7 @@ export default function HomeProductShelf({
           </h3>
 
           {products.length > 1 && (
-            <div className="flex items-center justify-center gap-2 sm:ml-auto">
+            <div className="flex items-center justify-center gap-2 sm:ml-auto lg:hidden">
               <button
                 type="button"
                 onClick={handlePrevious}
@@ -193,7 +193,7 @@ export default function HomeProductShelf({
         </div>
 
         {products.length > 1 && (
-          <div className="mt-5 flex justify-center gap-2">
+          <div className="mt-5 flex justify-center gap-2 lg:hidden">
             {products.map((product, index) => (
               <button
                 key={product.slug}
