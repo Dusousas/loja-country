@@ -9,8 +9,16 @@ import { SiPix } from "react-icons/si";
 import type { CategoryDefinition, Product } from "@/lib/products";
 
 type CategoryListingViewProps = {
-  category: CategoryDefinition;
   products: Product[];
+  category?: CategoryDefinition;
+  title?: string;
+  description?: string;
+  breadcrumbItems?: Array<{
+    label: string;
+    href?: string;
+  }>;
+  showCategoryFilter?: boolean;
+  emptyDescription?: string;
 };
 
 function parsePrice(price: string) {
@@ -26,15 +34,28 @@ function parsePrice(price: string) {
 export default function CategoryListingView({
   category,
   products,
+  title,
+  description,
+  breadcrumbItems,
+  showCategoryFilter,
+  emptyDescription,
 }: CategoryListingViewProps) {
   const [selectedBrands, setSelectedBrands] = useState<string[]>([]);
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [selectedColors, setSelectedColors] = useState<string[]>([]);
   const [sortOrder, setSortOrder] = useState("older");
   const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
-  const shouldShowCategoryFilter = ["masculino", "feminino", "infantil"].includes(
-    category.slug
-  );
+  const resolvedTitle = title ?? category?.title ?? "Catalogo";
+  const resolvedDescription = description ?? category?.description ?? "";
+  const resolvedBreadcrumbItems = breadcrumbItems ?? [
+    { label: "Inicio", href: "/" },
+    { label: category?.label ?? resolvedTitle },
+  ];
+  const shouldShowCategoryFilter =
+    showCategoryFilter ??
+    (category
+      ? ["masculino", "feminino", "infantil"].includes(category.slug)
+      : true);
 
   const brands = useMemo(
     () => Array.from(new Set(products.map((product) => product.brand))).sort(),
@@ -236,21 +257,30 @@ export default function CategoryListingView({
           <div>
             <div className="border-b border-[#e5ddd5] pb-5">
               <div className="flex flex-wrap items-center gap-2 text-[13px] text-[#6e7a89]">
-                <Link href="/" className="hover:text-[#171717]">
-                  Inicio
-                </Link>
-                <FiChevronRight className="text-[12px]" />
-                <span className="font-medium text-[#171717]">{category.label}</span>
+                {resolvedBreadcrumbItems.map((item, index) => (
+                  <div key={`${item.label}-${index}`} className="flex items-center gap-2">
+                    {index > 0 && <FiChevronRight className="text-[12px]" />}
+                    {item.href ? (
+                      <Link href={item.href} className="hover:text-[#171717]">
+                        {item.label}
+                      </Link>
+                    ) : (
+                      <span className="font-medium text-[#171717]">{item.label}</span>
+                    )}
+                  </div>
+                ))}
               </div>
 
               <div className="mt-3 flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
                 <div className="max-w-3xl">
                   <h1 className="text-[28px] leading-none font-semibold text-[#171717] sm:text-[30px]">
-                    {category.title}
+                    {resolvedTitle}
                   </h1>
-                  <p className="mt-3 hidden text-[14px] leading-6 text-[#4e5968] sm:block">
-                    {category.description}
-                  </p>
+                  {resolvedDescription && (
+                    <p className="mt-3 hidden text-[14px] leading-6 text-[#4e5968] sm:block">
+                      {resolvedDescription}
+                    </p>
+                  )}
                 </div>
 
                 <div className="hidden flex-wrap items-center gap-x-6 gap-y-3 xl:justify-end xl:flex">
@@ -387,7 +417,8 @@ export default function CategoryListingView({
                   Nenhum produto encontrado
                 </h2>
                 <p className="mt-3 text-[15px] text-[#5f6d80]">
-                  Ajuste os filtros da sidebar para encontrar outras opcoes.
+                  {emptyDescription ??
+                    "Ajuste os filtros da sidebar para encontrar outras opcoes."}
                 </p>
               </div>
             )}

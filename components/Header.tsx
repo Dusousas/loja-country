@@ -86,13 +86,15 @@ export default function Header() {
 
         <section className="border-b border-black/8 bg-white px-4 py-4">
           <form
+            action="/categorias"
+            method="get"
             className="flex w-full items-center border border-black/12 bg-white px-4 py-3"
             role="search"
           >
             <FiSearch className="mr-3 shrink-0 text-[18px] text-[#171717]" />
             <input
               type="search"
-              name="search"
+              name="q"
               placeholder="Pesquise aqui"
               className="w-full bg-transparent text-[15px] text-[#171717] outline-none placeholder:text-black/35"
               aria-label="Pesquisar produtos"
@@ -121,13 +123,15 @@ export default function Header() {
               </Link>
 
               <form
+                action="/categorias"
+                method="get"
                 className="mx-auto flex w-full max-w-3xl items-center rounded-full border border-black/15 bg-[#fbf8f4] px-5 py-3 shadow-[0_10px_25px_rgba(23,23,23,0.06)] transition-colors focus-within:border-[#171717]"
                 role="search"
               >
                 <FiSearch className="mr-3 shrink-0 text-[20px] text-[#171717]" />
                 <input
                   type="search"
-                  name="search"
+                  name="q"
                   placeholder="O que voce procura?"
                   className="w-full bg-transparent text-[15px] text-[#171717] outline-none placeholder:text-black/45"
                   aria-label="Pesquisar produtos"
@@ -199,13 +203,16 @@ export default function Header() {
 
           <div className="flex-1 overflow-y-auto px-4 pb-8 pt-4">
             <form
+              action="/categorias"
+              method="get"
+              onSubmit={closeMobileMenu}
               className="mx-auto flex w-full max-w-md items-center border border-black/12 bg-white px-4 py-3 shadow-[0_12px_30px_rgba(23,23,23,0.06)]"
               role="search"
             >
               <FiSearch className="mr-3 shrink-0 text-[18px] text-[#171717]" />
               <input
                 type="search"
-                name="search"
+                name="q"
                 placeholder="Pesquise aqui"
                 className="w-full bg-transparent text-[15px] text-[#171717] outline-none placeholder:text-black/35"
                 aria-label="Pesquisar produtos"

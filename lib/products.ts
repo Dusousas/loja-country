@@ -736,8 +736,40 @@ export async function getAdminProductCatalog(options?: {
 }
 
 export async function getAllProducts() {
+  return getCatalogProducts();
+}
+
+export async function getCatalogProducts(options?: { query?: string }) {
   return queryProducts(async (client) => {
-    const result = await client.query("SELECT * FROM products ORDER BY created_at DESC, id DESC");
+    const query = normalizeSearchTerm(options?.query ?? "");
+    const values: string[] = [];
+    let whereClause = "";
+
+    if (query) {
+      values.push(`%${query}%`);
+      const placeholder = `$${values.length}`;
+      whereClause = `
+        WHERE (
+          name ILIKE ${placeholder}
+          OR brand ILIKE ${placeholder}
+          OR slug ILIKE ${placeholder}
+          OR category ILIKE ${placeholder}
+          OR description ILIKE ${placeholder}
+          OR category_trail::text ILIKE ${placeholder}
+        )
+      `;
+    }
+
+    const result = await client.query(
+      `
+        SELECT *
+        FROM products
+        ${whereClause}
+        ORDER BY created_at DESC, id DESC
+      `,
+      values
+    );
+
     return result.rows.map((row) => rowToProduct(row));
   });
 }
