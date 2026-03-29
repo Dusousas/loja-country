@@ -32,60 +32,60 @@ function getAudiencePhrase(primaryGroup: string) {
   const normalized = primaryGroup.toLowerCase();
 
   if (normalized === "masculino") {
-    return "para o publico masculino";
+    return "para homens que querem estilo country com personalidade";
   }
 
   if (normalized === "feminino") {
-    return "para o publico feminino";
+    return "para mulheres que querem um visual country marcante e elegante";
   }
 
   if (normalized === "infantil") {
-    return "para a linha infantil";
+    return "para quem procura conforto e estilo country para a linha infantil";
   }
 
-  return "para compor o catalogo da loja";
+  return "para quem quer completar o look com autenticidade";
 }
 
 function getCategoryPhrase(category: string) {
   const normalized = category.toLowerCase();
 
   if (normalized === "blusas") {
-    return "com leitura country e caimento pensado para o dia a dia";
+    return "que oferece um caimento bonito, versatilidade no uso e presenca no visual";
   }
 
   if (normalized === "calcas") {
-    return "com modelagem marcante e visual forte para vitrines comerciais";
+    return "que valoriza o caimento no corpo e combina conforto com estilo no dia a dia";
   }
 
   if (normalized === "bones") {
-    return "com estilo casual e giro rapido no ponto de venda";
+    return "ideal para proteger do sol e finalizar o look com um toque casual";
   }
 
   if (normalized === "chapeus") {
-    return "com presenca visual e identidade western bem definida";
+    return "perfeito para destacar o visual com personalidade e identidade western";
   }
 
   if (normalized === "casacos") {
-    return "com proposta robusta para meia-estacao e dias mais frios";
+    return "excelente para dias mais frios, trazendo protecao e um visual forte";
   }
 
   if (normalized === "vestidos") {
-    return "com visual feminino e proposta country elegante";
+    return "que une feminilidade, conforto e um estilo country elegante";
   }
 
   if (normalized === "cintos") {
-    return "para complementar os looks com mais personalidade";
+    return "que valoriza a producao e deixa o look mais completo";
   }
 
   if (normalized === "pijamas") {
-    return "com conforto e estilo para ampliar o mix da loja";
+    return "pensado para oferecer conforto sem abrir mao do estilo";
   }
 
   if (normalized === "acessorios") {
-    return "para completar a producao com identidade country";
+    return "ideal para complementar a producao com mais estilo";
   }
 
-  return "com visual country e boa leitura comercial";
+  return "feito para entregar estilo, conforto e versatilidade";
 }
 
 export function generateProductDescription({
@@ -108,26 +108,27 @@ export function generateProductDescription({
   const formattedSizes = formatSizes(uniqueSizes.slice(0, 6));
 
   const parts = [
-    `${safeName} da ${safeBrand}, um ${safeCategory.toLowerCase()} ${getCategoryPhrase(
+    `${safeName} da ${safeBrand} e um ${safeCategory.toLowerCase()} ${getCategoryPhrase(
       safeCategory
-    )} ${getAudiencePhrase(safePrimaryGroup)}.`,
+    )}, ${getAudiencePhrase(safePrimaryGroup)}.`,
+    "E uma peca pensada para quem quer se vestir bem, com conforto e autenticidade em diferentes ocasioes.",
   ];
 
   if (safeColorName) {
     parts.push(
-      `A cor ${safeColorName} reforca a proposta da peca e ajuda a destacar o produto na composicao dos looks.`
+      `A cor ${safeColorName} ajuda a destacar a peca e facilita combinacoes com outros itens do guarda-roupa.`
     );
   }
 
   if (formattedSizes) {
     parts.push(
-      `Disponivel nos tamanhos ${formattedSizes}, e uma opcao versatil para atender diferentes perfis de cliente com mais facilidade.`
+      `Disponivel nos tamanhos ${formattedSizes}, oferece mais praticidade na escolha e melhor ajuste para diferentes perfis de cliente.`
     );
   }
 
   if (homeSections.length > 0) {
     parts.push(
-      "Pode ser usado como destaque em vitrines estrategicas da home para aumentar a visibilidade da categoria."
+      "E uma excelente escolha para quem busca uma peca de destaque, com apelo visual forte e proposta comercial atrativa."
     );
   }
 
