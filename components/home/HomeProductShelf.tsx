@@ -93,13 +93,13 @@ export default function HomeProductShelf({
   return (
     <section className="py-10">
       <div className="maxW">
-        <div className="flex flex-wrap items-center justify-between gap-4">
-          <h3 className="text-center text-2xl font-semibold uppercase text-[#171717] sm:text-3xl">
+        <div className="flex flex-col items-center justify-center gap-4 sm:flex-row sm:justify-between">
+          <h3 className="w-full text-center text-2xl font-semibold uppercase text-[#171717] sm:w-auto sm:text-3xl">
             {title}
           </h3>
 
           {products.length > 1 && (
-            <div className="ml-auto flex items-center gap-2">
+            <div className="flex items-center justify-center gap-2 sm:ml-auto">
               <button
                 type="button"
                 onClick={handlePrevious}

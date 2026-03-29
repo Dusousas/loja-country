@@ -53,7 +53,7 @@ export default function Header() {
       </section>
 
       <div className="lg:hidden">
-        <section className="bg-[#17345c] px-4 py-4 text-white">
+        <section className="bg-white px-4 py-4 text-[#171717]">
           <div className="flex items-center justify-between gap-4">
             <button
               type="button"
@@ -166,7 +166,7 @@ export default function Header() {
 
       {isMobileMenuOpen && (
         <div className="fixed inset-0 z-[80] flex flex-col bg-white lg:hidden">
-          <section className="bg-[#17345c] px-4 py-4 text-white">
+          <section className="bg-white px-4 py-4 text-[#171717]">
             <div className="flex items-center justify-between gap-4">
               <button
                 type="button"
@@ -199,7 +199,7 @@ export default function Header() {
 
           <div className="flex-1 overflow-y-auto px-4 pb-8 pt-4">
             <form
-              className="flex w-full items-center border border-black/12 bg-white px-4 py-3 shadow-[0_12px_30px_rgba(23,23,23,0.06)]"
+              className="mx-auto flex w-full max-w-md items-center border border-black/12 bg-white px-4 py-3 shadow-[0_12px_30px_rgba(23,23,23,0.06)]"
               role="search"
             >
               <FiSearch className="mr-3 shrink-0 text-[18px] text-[#171717]" />
@@ -212,21 +212,20 @@ export default function Header() {
               />
             </form>
 
-            <div className="mt-6">
+            <div className="mt-6 text-center">
               <p className="text-[12px] font-semibold uppercase tracking-[0.22em] text-[#8f5c3d]">
                 Categorias
               </p>
 
-              <ul className="mt-4 grid gap-3">
+              <ul className="mx-auto mt-4 grid max-w-md gap-2">
                 {navItems.map((item) => (
                   <li key={item.label}>
                     <Link
                       href={item.href}
                       onClick={closeMobileMenu}
-                      className="flex items-center justify-between border-b border-black/8 py-3 text-[18px] font-semibold text-[#171717]"
+                      className="flex items-center justify-center border-b border-black/8 py-3 text-center text-[18px] font-semibold text-[#171717]"
                     >
                       <span>{item.label}</span>
-                      <span className="text-[18px] text-[#8f5c3d]">+</span>
                     </Link>
                   </li>
                 ))}
