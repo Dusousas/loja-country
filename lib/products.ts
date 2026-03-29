@@ -446,9 +446,6 @@ export const defaultProducts: Product[] = [
   },
 ];
 
-export const products = defaultProducts;
-export const promotionProducts = defaultProducts.slice(0, 4);
-
 const homeSectionColumns = {
   promocoes: {
     flag: "show_in_promocoes",
@@ -496,24 +493,6 @@ function getCategoryLabel(slug: CategorySlug) {
   return (
     categoryDefinitions.find((category) => category.slug === slug)?.label ?? slug
   );
-}
-
-function getSeedHomeSections(product: Product, index: number): HomeSection[] {
-  const sections = new Set<HomeSection>();
-
-  if (index < 4) {
-    sections.add("promocoes");
-  }
-
-  if (product.navGroups.includes("chapeus")) {
-    sections.add("chapeus");
-  }
-
-  if (product.navGroups.includes("infantil")) {
-    sections.add("infantil");
-  }
-
-  return Array.from(sections);
 }
 
 function parseJsonArray(value: unknown): string[] {
@@ -621,78 +600,14 @@ async function ensureDatabaseReady() {
         )
       `);
 
-      const countResult = await pool.query<{ total: string }>(
-        "SELECT COUNT(*)::text AS total FROM products"
+      await pool.query(
+        `
+          DELETE FROM products
+          WHERE slug = ANY($1::text[])
+            AND image = '/img-teste.jpg'
+        `,
+        [defaultProducts.map((product) => product.slug)]
       );
-
-      if (countResult.rows[0]?.total !== "0") {
-        return;
-      }
-
-      for (const [index, product] of defaultProducts.entries()) {
-        const homeSections = getSeedHomeSections(product, index);
-
-        await pool.query(
-          `
-            INSERT INTO products (
-              slug,
-              brand,
-              name,
-              card_title,
-              image,
-              gallery,
-              original_price,
-              price,
-              pix_price,
-              pix_label,
-              installments,
-              sizes,
-              color_name,
-              color_swatch,
-              category_trail,
-              description,
-              nav_groups,
-              category,
-              show_in_promocoes,
-              featured_promocoes_at,
-              show_in_chapeus,
-              featured_chapeus_at,
-              show_in_infantil,
-              featured_infantil_at
-            )
-            VALUES (
-              $1, $2, $3, $4, $5, $6::jsonb, $7, $8, $9, $10, $11, $12::jsonb,
-              $13, $14, $15::jsonb, $16, $17::jsonb, $18, $19, $20, $21, $22, $23, $24
-            )
-          `,
-          [
-            product.slug,
-            product.brand,
-            product.name,
-            product.cardTitle,
-            product.image,
-            JSON.stringify(product.gallery),
-            product.originalPrice,
-            product.price,
-            product.pixPrice,
-            product.pixLabel,
-            product.installments,
-            JSON.stringify(product.sizes),
-            product.color.name,
-            product.color.swatch,
-            JSON.stringify(product.categoryTrail),
-            product.description,
-            JSON.stringify(product.navGroups),
-            product.category,
-            homeSections.includes("promocoes"),
-            homeSections.includes("promocoes") ? new Date() : null,
-            homeSections.includes("chapeus"),
-            homeSections.includes("chapeus") ? new Date() : null,
-            homeSections.includes("infantil"),
-            homeSections.includes("infantil") ? new Date() : null,
-          ]
-        );
-      }
     })();
   }
 
