@@ -11,8 +11,16 @@ const presetColors = [
   { label: "Preto", value: "#262626" },
 ];
 
-export default function ColorFields() {
-  const [colorSwatch, setColorSwatch] = useState("#17345c");
+type ColorFieldsProps = {
+  defaultColorName?: string;
+  defaultColorSwatch?: string;
+};
+
+export default function ColorFields({
+  defaultColorName = "",
+  defaultColorSwatch = "#17345c",
+}: ColorFieldsProps) {
+  const [colorSwatch, setColorSwatch] = useState(defaultColorSwatch);
 
   return (
     <div className="mt-5 rounded-2xl border border-[#ece3da] bg-white p-4">
@@ -26,6 +34,7 @@ export default function ColorFields() {
             name="colorName"
             required
             placeholder="Marinho"
+            defaultValue={defaultColorName}
             className="w-full rounded-2xl border border-[#d7dfe6] bg-white px-4 py-3 text-[15px] text-[#171717] outline-none transition-colors focus:border-[#17345c]"
           />
         </label>

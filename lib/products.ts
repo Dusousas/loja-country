@@ -642,6 +642,16 @@ export async function getAdminProducts() {
   });
 }
 
+export async function getAdminProductById(productId: number) {
+  return queryProducts(async (client) => {
+    const result = await client.query("SELECT * FROM products WHERE id = $1 LIMIT 1", [
+      productId,
+    ]);
+
+    return result.rows[0] ? rowToAdminProduct(result.rows[0]) : undefined;
+  });
+}
+
 export async function getAdminDashboardSummary(): Promise<AdminDashboardSummary> {
   return queryProducts(async (client) => {
     const result = await client.query<{
@@ -933,6 +943,150 @@ export async function createProduct(input: ProductFormInput) {
         homeSections.includes("chapeus") ? new Date() : null,
         homeSections.includes("infantil"),
         homeSections.includes("infantil") ? new Date() : null,
+      ]
+    );
+
+    for (const section of homeSections) {
+      await pruneHomeSection(client, section);
+    }
+
+    return rowToAdminProduct(result.rows[0]);
+  });
+}
+
+export async function updateProduct(productId: number, input: ProductFormInput) {
+  const brand = normalizeText(input.brand);
+  const name = normalizeText(input.name);
+  const slug = slugify(input.slug || name);
+  const image = normalizeText(input.image);
+  const description = normalizeText(input.description);
+  const sizes = input.sizes.map(normalizeText).filter(Boolean);
+  const gallery = (input.gallery ?? []).map(normalizeText).filter(Boolean);
+  const homeSections = input.homeSections ?? [];
+
+  if (!brand || !name || !slug || !image || !description) {
+    throw new Error("Preencha os campos principais do produto.");
+  }
+
+  if (sizes.length === 0) {
+    throw new Error("Informe pelo menos um tamanho.");
+  }
+
+  const primaryGroup = input.primaryGroup;
+  const categorySlug = input.categorySlug;
+
+  if (
+    !panelPrimaryCategoryOptions.some((category) => category.slug === primaryGroup)
+  ) {
+    throw new Error("Categoria principal invalida.");
+  }
+
+  if (
+    !panelProductCategoryOptions.some((category) => category.slug === categorySlug)
+  ) {
+    throw new Error("Categoria do produto invalida.");
+  }
+
+  const productCategoryLabel = getCategoryLabel(categorySlug);
+  const primaryCategoryLabel = getCategoryLabel(primaryGroup);
+
+  return queryProducts(async (client) => {
+    const current = await client.query("SELECT id FROM products WHERE id = $1 LIMIT 1", [
+      productId,
+    ]);
+
+    if (!current.rowCount) {
+      throw new Error("Produto nao encontrado.");
+    }
+
+    const existingSlug = await client.query(
+      "SELECT id FROM products WHERE slug = $1 AND id <> $2 LIMIT 1",
+      [slug, productId]
+    );
+
+    if (existingSlug.rowCount) {
+      throw new Error("Ja existe outro produto com esse slug.");
+    }
+
+    const cardTitle = normalizeText(input.cardTitle || name);
+    const originalPrice = normalizeText(input.originalPrice || input.price);
+    const price = normalizeText(input.price);
+    const pixPrice = normalizeText(input.pixPrice || calculatePixPrice(price));
+    const pixLabel = defaultPixLabel;
+    const installments = defaultInstallmentsLabel;
+    const colorName = normalizeText(input.colorName);
+    const colorSwatch = sanitizeSwatch(input.colorSwatch);
+    const navGroups = uniqueValues([primaryGroup, categorySlug]);
+    const categoryTrail = ["Inicio", primaryCategoryLabel, productCategoryLabel, brand];
+    const finalGallery = getNormalizedGallery(image, gallery);
+
+    if (!price || !pixPrice) {
+      throw new Error("Informe os valores do produto para calcular o Pix.");
+    }
+
+    const result = await client.query(
+      `
+        UPDATE products
+        SET slug = $2,
+            brand = $3,
+            name = $4,
+            card_title = $5,
+            image = $6,
+            gallery = $7::jsonb,
+            original_price = $8,
+            price = $9,
+            pix_price = $10,
+            pix_label = $11,
+            installments = $12,
+            sizes = $13::jsonb,
+            color_name = $14,
+            color_swatch = $15,
+            category_trail = $16::jsonb,
+            description = $17,
+            nav_groups = $18::jsonb,
+            category = $19,
+            show_in_promocoes = $20,
+            featured_promocoes_at = CASE
+              WHEN $20 THEN COALESCE(featured_promocoes_at, NOW())
+              ELSE NULL
+            END,
+            show_in_chapeus = $21,
+            featured_chapeus_at = CASE
+              WHEN $21 THEN COALESCE(featured_chapeus_at, NOW())
+              ELSE NULL
+            END,
+            show_in_infantil = $22,
+            featured_infantil_at = CASE
+              WHEN $22 THEN COALESCE(featured_infantil_at, NOW())
+              ELSE NULL
+            END,
+            updated_at = NOW()
+        WHERE id = $1
+        RETURNING *
+      `,
+      [
+        productId,
+        slug,
+        brand,
+        name,
+        cardTitle,
+        image,
+        JSON.stringify(finalGallery),
+        originalPrice,
+        price,
+        pixPrice,
+        pixLabel,
+        installments,
+        JSON.stringify(sizes),
+        colorName,
+        colorSwatch,
+        JSON.stringify(categoryTrail),
+        description,
+        JSON.stringify(navGroups),
+        productCategoryLabel,
+        homeSections.includes("promocoes"),
+        homeSections.includes("chapeus"),
+        homeSections.includes("infantil"),
       ]
     );
 

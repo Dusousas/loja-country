@@ -23,6 +23,7 @@ type PreviewProps = {
   primaryOptions: CategoryOption[];
   productOptions: CategoryOption[];
   homeSectionLabels: Record<HomeSection, string>;
+  fallbackImageUrl?: string;
 };
 
 type PreviewState = {
@@ -81,6 +82,7 @@ export default function AdminProductLivePreview({
   primaryOptions,
   productOptions,
   homeSectionLabels,
+  fallbackImageUrl = defaultImage,
 }: PreviewProps) {
   const [preview, setPreview] = useState<PreviewState>(initialState);
   const objectUrlRef = useRef<string | null>(null);
@@ -95,7 +97,7 @@ export default function AdminProductLivePreview({
     const syncPreview = () => {
       const formData = new FormData(form);
       const mainImage = formData.get("mainImage");
-      let imageUrl = defaultImage;
+      let imageUrl = fallbackImageUrl;
 
       if (objectUrlRef.current) {
         URL.revokeObjectURL(objectUrlRef.current);

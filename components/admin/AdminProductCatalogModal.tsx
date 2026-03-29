@@ -444,19 +444,28 @@ export default function AdminProductCatalogModal({
                           ))}
                         </div>
 
-                        <form action={deleteProductFromPanel}>
-                          <input type="hidden" name="productId" value={selectedProduct.id} />
-                          <input type="hidden" name="page" value={page} />
-                          <input type="hidden" name="query" value={query} />
-                          <input type="hidden" name="catalog" value="1" />
-                          <SubmitButton
-                            pendingLabel="Removendo..."
-                            confirmMessage={`Remover "${selectedProduct.name}" da loja e do painel?`}
-                            className="inline-flex items-center justify-center rounded-2xl border border-[#e1b8b8] bg-white px-5 py-3 text-xs font-semibold uppercase tracking-[0.16em] text-[#a33d3d] transition-colors hover:border-[#a33d3d] hover:bg-[#fff5f5]"
+                        <div className="flex flex-wrap items-center gap-3">
+                          <Link
+                            href={`/painel/produtos/${selectedProduct.id}`}
+                            className="inline-flex items-center justify-center rounded-2xl border border-[#d8c9bb] bg-white px-5 py-3 text-xs font-semibold uppercase tracking-[0.16em] text-[#17345c] transition-colors hover:border-[#17345c]"
                           >
-                            Excluir produto
-                          </SubmitButton>
-                        </form>
+                            Editar produto
+                          </Link>
+
+                          <form action={deleteProductFromPanel}>
+                            <input type="hidden" name="productId" value={selectedProduct.id} />
+                            <input type="hidden" name="page" value={page} />
+                            <input type="hidden" name="query" value={query} />
+                            <input type="hidden" name="catalog" value="1" />
+                            <SubmitButton
+                              pendingLabel="Removendo..."
+                              confirmMessage={`Remover "${selectedProduct.name}" da loja e do painel?`}
+                              className="inline-flex items-center justify-center rounded-2xl border border-[#e1b8b8] bg-white px-5 py-3 text-xs font-semibold uppercase tracking-[0.16em] text-[#a33d3d] transition-colors hover:border-[#a33d3d] hover:bg-[#fff5f5]"
+                            >
+                              Excluir produto
+                            </SubmitButton>
+                          </form>
+                        </div>
                       </div>
                     </div>
                   </div>
