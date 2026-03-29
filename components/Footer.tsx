@@ -153,7 +153,9 @@ export default function Footer() {
         <div className="maxW">
           <div className="flex flex-col items-center justify-between gap-3 py-6 text-center text-sm text-white/58 md:flex-row md:text-left">
             <p>&copy; {year} Country. Todos os direitos reservados.</p>
-            <p>Desenvolvido para uma vitrine country com venda direta.</p>
+            <p>Desenvolvido por <a href="https://agenciayouon.com/" target="_blank" rel="noopener noreferrer" className="hover:underline">
+              You on
+            </a></p>
           </div>
         </div>
       </section>
