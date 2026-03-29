@@ -104,7 +104,6 @@ export async function createProductFromPanel(formData: FormData) {
       slug: getString(formData, "slug"),
       image,
       gallery,
-      originalPrice: getString(formData, "originalPrice"),
       price: getString(formData, "price"),
       sizes: getList(formData, "sizes"),
       colorName: getString(formData, "colorName"),

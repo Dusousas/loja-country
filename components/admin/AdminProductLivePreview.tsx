@@ -33,7 +33,6 @@ type PreviewState = {
   category: string;
   imageUrl: string;
   price: string;
-  originalPrice: string;
   pixPrice: string;
   colorName: string;
   colorSwatch: string;
@@ -51,9 +50,8 @@ const initialState: PreviewState = {
   primaryGroup: "Masculino",
   category: "Blusas",
   imageUrl: defaultImage,
-  price: "R$170,43",
-  originalPrice: "R$189,90",
-  pixPrice: "R$161,91",
+  price: "R$189,90",
+  pixPrice: "R$180,41",
   colorName: "Marinho",
   colorSwatch: "#17345c",
   sizes: ["P", "M", "G"],
@@ -136,8 +134,6 @@ export default function AdminProductLivePreview({
         ),
         imageUrl,
         price: String(formData.get("price") ?? "").trim() || initialState.price,
-        originalPrice:
-          String(formData.get("originalPrice") ?? "").trim() || initialState.originalPrice,
         pixPrice:
           calculatePixPrice(String(formData.get("price") ?? "")) || initialState.pixPrice,
         colorName:
@@ -257,7 +253,7 @@ export default function AdminProductLivePreview({
           />
           <div>
             <p className="text-sm font-semibold text-[#171717]">{preview.colorName}</p>
-            <p className="text-xs text-[#68788a]">{preview.originalPrice}</p>
+            <p className="text-xs text-[#68788a]">Valor cheio do produto</p>
           </div>
         </div>
 
@@ -265,7 +261,7 @@ export default function AdminProductLivePreview({
 
         <div className="mt-4 rounded-2xl border border-[#ece3da] bg-[#fcfbfa] px-4 py-3">
           <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#8f5c3d]">
-            Valor de venda
+            Valor do produto
           </p>
           <p className="mt-1 text-2xl font-semibold text-[#171717]">{preview.price}</p>
         </div>

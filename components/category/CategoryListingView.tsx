@@ -313,9 +313,11 @@ export default function CategoryListingView({
                         <span>{product.pixPrice} com Pix</span>
                       </p>
 
-                      <p className="mt-1 text-[11px] text-[#8b93a0] line-through">
-                        {product.originalPrice}
-                      </p>
+                      {product.originalPrice !== product.price && (
+                        <p className="mt-1 text-[11px] text-[#8b93a0] line-through">
+                          {product.originalPrice}
+                        </p>
+                      )}
 
                       <p className="mt-1 flex items-center justify-center gap-1.5 text-[10px] font-medium text-[#46566f]">
                         <FiCreditCard className="text-[12px]" />

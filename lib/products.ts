@@ -80,7 +80,7 @@ export type ProductFormInput = {
   slug?: string;
   image: string;
   gallery?: string[];
-  originalPrice: string;
+  originalPrice?: string;
   price: string;
   pixPrice?: string;
   pixLabel?: string;
@@ -900,7 +900,7 @@ export async function createProduct(input: ProductFormInput) {
     }
 
     const cardTitle = normalizeText(input.cardTitle || name);
-    const originalPrice = normalizeText(input.originalPrice);
+    const originalPrice = normalizeText(input.originalPrice || input.price);
     const price = normalizeText(input.price);
     const pixPrice = normalizeText(input.pixPrice || calculatePixPrice(price));
     const pixLabel = defaultPixLabel;
@@ -911,7 +911,7 @@ export async function createProduct(input: ProductFormInput) {
     const categoryTrail = ["Inicio", primaryCategoryLabel, productCategoryLabel, brand];
     const finalGallery = gallery.length > 0 ? uniqueValues([image, ...gallery]) : [image, image, image, image];
 
-    if (!originalPrice || !price || !pixPrice) {
+    if (!price || !pixPrice) {
       throw new Error("Informe os valores do produto para calcular o Pix.");
     }
 

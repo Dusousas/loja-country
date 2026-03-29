@@ -319,31 +319,21 @@ export default async function ProductAdminPage({
                   <h3 className="text-lg font-semibold text-[#171717]">
                     Precos, cor e tamanhos
                   </h3>
-                  <div className="mt-5 grid gap-5 md:grid-cols-2">
+                  <div className="mt-5 grid gap-5">
                     <label className="block">
                       <span className="mb-2 block text-sm font-semibold text-[#17345c]">
-                        Preco original
-                      </span>
-                      <input
-                        type="text"
-                        name="originalPrice"
-                        required
-                        placeholder="R$189,90"
-                        className="w-full rounded-2xl border border-[#d7dfe6] bg-white px-4 py-3 text-[15px] text-[#171717] outline-none transition-colors focus:border-[#17345c]"
-                      />
-                    </label>
-
-                    <label className="block">
-                      <span className="mb-2 block text-sm font-semibold text-[#17345c]">
-                        Preco de venda
+                        Valor do produto
                       </span>
                       <input
                         type="text"
                         name="price"
                         required
-                        placeholder="R$170,43"
+                        placeholder="R$189,90"
                         className="w-full rounded-2xl border border-[#d7dfe6] bg-white px-4 py-3 text-[15px] text-[#171717] outline-none transition-colors focus:border-[#17345c]"
                       />
+                      <p className="mt-2 text-[12px] leading-5 text-[#68788a]">
+                        Esse e o valor cheio. O Pix com 5% OFF e calculado automaticamente.
+                      </p>
                     </label>
                   </div>
 
