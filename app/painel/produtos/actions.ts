@@ -80,6 +80,7 @@ function revalidateProductExperience(slug: string, navGroups: string[]) {
 
 export async function createProductFromPanel(formData: FormData) {
   await requireAdminAuthentication();
+  let redirectPath = "";
 
   try {
     const name = getString(formData, "name");
@@ -118,17 +119,20 @@ export async function createProductFromPanel(formData: FormData) {
     const product = await createProduct(input);
 
     revalidateProductExperience(product.slug, product.navGroups);
-    redirect(`/painel/produtos?status=created&slug=${product.slug}`);
+    redirectPath = `/painel/produtos?status=created&slug=${product.slug}`;
   } catch (error) {
     const message =
       error instanceof Error ? error.message : "Nao foi possivel cadastrar o produto.";
 
     redirect(`/painel/produtos?status=error&message=${encodeURIComponent(message)}`);
   }
+
+  redirect(redirectPath);
 }
 
 export async function toggleHomeSectionFromPanel(formData: FormData) {
   await requireAdminAuthentication();
+  let redirectPath = "";
 
   try {
     const productId = Number(getString(formData, "productId"));
@@ -145,7 +149,7 @@ export async function toggleHomeSectionFromPanel(formData: FormData) {
 
     const product = await updateProductHomeSection(productId, section, enabled);
     revalidateProductExperience(product.slug, product.navGroups);
-    redirect(buildPanelUrl(formData, { status: "updated" }));
+    redirectPath = buildPanelUrl(formData, { status: "updated" });
   } catch (error) {
     const message =
       error instanceof Error ? error.message : "Nao foi possivel atualizar a vitrine.";
@@ -157,10 +161,13 @@ export async function toggleHomeSectionFromPanel(formData: FormData) {
       })
     );
   }
+
+  redirect(redirectPath);
 }
 
 export async function deleteProductFromPanel(formData: FormData) {
   await requireAdminAuthentication();
+  let redirectPath = "";
 
   try {
     const productId = Number(getString(formData, "productId"));
@@ -173,7 +180,7 @@ export async function deleteProductFromPanel(formData: FormData) {
     await deleteUploadedAssets([product.image, ...product.gallery]);
     revalidateProductExperience(product.slug, product.navGroups);
 
-    redirect(buildPanelUrl(formData, { status: "deleted" }));
+    redirectPath = buildPanelUrl(formData, { status: "deleted" });
   } catch (error) {
     const message =
       error instanceof Error ? error.message : "Nao foi possivel remover o produto.";
@@ -185,6 +192,8 @@ export async function deleteProductFromPanel(formData: FormData) {
       })
     );
   }
+
+  redirect(redirectPath);
 }
 
 export async function logoutFromAdminPanel() {
@@ -194,6 +203,7 @@ export async function logoutFromAdminPanel() {
 
 export async function updateAnnouncementMessagesFromPanel(formData: FormData) {
   await requireAdminAuthentication();
+  let redirectPath = "";
 
   try {
     const messages = getString(formData, "announcementMessages")
@@ -205,7 +215,7 @@ export async function updateAnnouncementMessagesFromPanel(formData: FormData) {
     revalidatePath("/");
     revalidatePath("/painel/produtos");
 
-    redirect("/painel/produtos?status=announcements-updated");
+    redirectPath = "/painel/produtos?status=announcements-updated";
   } catch (error) {
     const message =
       error instanceof Error
@@ -216,4 +226,6 @@ export async function updateAnnouncementMessagesFromPanel(formData: FormData) {
       `/painel/produtos?status=error&message=${encodeURIComponent(message)}`
     );
   }
+
+  redirect(redirectPath);
 }

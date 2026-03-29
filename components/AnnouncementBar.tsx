@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 
 const fallbackMessages = [
   "Frete gratis para todo o Brasil",
@@ -14,6 +14,8 @@ type SiteSettingsResponse = {
 
 export default function AnnouncementBar() {
   const [messages, setMessages] = useState(fallbackMessages);
+  const [activeIndex, setActiveIndex] = useState(0);
+  const [isVisible, setIsVisible] = useState(true);
 
   useEffect(() => {
     let isActive = true;
@@ -51,21 +53,41 @@ export default function AnnouncementBar() {
     };
   }, []);
 
-  const marqueeItems = useMemo(() => [...messages, ...messages], [messages]);
+  useEffect(() => {
+    setActiveIndex(0);
+    setIsVisible(true);
+  }, [messages]);
+
+  useEffect(() => {
+    if (messages.length <= 1) {
+      return;
+    }
+
+    const interval = window.setInterval(() => {
+      setIsVisible(false);
+
+      window.setTimeout(() => {
+        setActiveIndex((current) => (current + 1) % messages.length);
+        setIsVisible(true);
+      }, 220);
+    }, 3200);
+
+    return () => {
+      window.clearInterval(interval);
+    };
+  }, [messages]);
 
   return (
     <section className="overflow-hidden bg-[#171717] py-2">
-      <div className="announcement-marquee">
-        <div className="announcement-marquee__track">
-          {marqueeItems.map((message, index) => (
-            <span
-              key={`${message}-${index}`}
-              className="announcement-marquee__item text-xs font-medium uppercase tracking-[0.24em] text-white sm:text-sm"
-            >
-              {message}
-            </span>
-          ))}
-        </div>
+      <div className="maxW">
+        <p
+          aria-live="polite"
+          className={`text-center text-xs font-medium uppercase tracking-[0.24em] text-white transition-opacity duration-200 sm:text-sm ${
+            isVisible ? "opacity-100" : "opacity-0"
+          }`}
+        >
+          {messages[activeIndex] ?? fallbackMessages[0]}
+        </p>
       </div>
     </section>
   );
