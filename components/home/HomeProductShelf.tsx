@@ -1,19 +1,91 @@
+"use client";
+
 import Image from "next/image";
 import Link from "next/link";
-import { FiCreditCard } from "react-icons/fi";
+import { useEffect, useRef, useState } from "react";
+import { FiChevronLeft, FiChevronRight, FiCreditCard } from "react-icons/fi";
 import { FaWhatsapp } from "react-icons/fa6";
 import { SiPix } from "react-icons/si";
-import type { Product } from "@/lib/products";
+
+type HomeProductShelfProduct = {
+  slug: string;
+  brand: string;
+  name: string;
+  cardTitle: string;
+  image: string;
+  pixPrice: string;
+  installments: string;
+  sizes: string[];
+};
 
 type HomeProductShelfProps = {
   title: string;
-  products: Product[];
+  products: HomeProductShelfProduct[];
 };
 
 export default function HomeProductShelf({
   title,
   products,
 }: HomeProductShelfProps) {
+  const trackRef = useRef<HTMLDivElement | null>(null);
+  const [activeIndex, setActiveIndex] = useState(0);
+
+  useEffect(() => {
+    const track = trackRef.current;
+
+    if (!track) {
+      return;
+    }
+
+    const handleScroll = () => {
+      const cards = Array.from(track.children) as HTMLElement[];
+      const trackLeft = track.getBoundingClientRect().left;
+
+      let nextIndex = 0;
+      let smallestDistance = Number.POSITIVE_INFINITY;
+
+      cards.forEach((card, index) => {
+        const distance = Math.abs(card.getBoundingClientRect().left - trackLeft);
+
+        if (distance < smallestDistance) {
+          smallestDistance = distance;
+          nextIndex = index;
+        }
+      });
+
+      setActiveIndex(nextIndex);
+    };
+
+    handleScroll();
+    track.addEventListener("scroll", handleScroll, { passive: true });
+
+    return () => {
+      track.removeEventListener("scroll", handleScroll);
+    };
+  }, [products.length]);
+
+  function scrollToCard(index: number) {
+    const track = trackRef.current;
+    const card = track?.children[index] as HTMLElement | undefined;
+
+    if (!track || !card) {
+      return;
+    }
+
+    track.scrollTo({
+      left: card.offsetLeft,
+      behavior: "smooth",
+    });
+  }
+
+  function handlePrevious() {
+    scrollToCard(Math.max(activeIndex - 1, 0));
+  }
+
+  function handleNext() {
+    scrollToCard(Math.min(activeIndex + 1, products.length - 1));
+  }
+
   if (products.length === 0) {
     return null;
   }
@@ -21,15 +93,42 @@ export default function HomeProductShelf({
   return (
     <section className="py-10">
       <div className="maxW">
-        <h3 className="text-center text-2xl font-semibold uppercase text-[#171717] sm:text-3xl">
-          {title}
-        </h3>
+        <div className="flex flex-wrap items-center justify-between gap-4">
+          <h3 className="text-center text-2xl font-semibold uppercase text-[#171717] sm:text-3xl">
+            {title}
+          </h3>
 
-        <div className="grid justify-items-center gap-5 pt-10 md:grid-cols-2 xl:grid-cols-4">
+          {products.length > 1 && (
+            <div className="ml-auto flex items-center gap-2">
+              <button
+                type="button"
+                onClick={handlePrevious}
+                aria-label="Produto anterior"
+                className="inline-flex size-11 items-center justify-center rounded-full border border-black/12 bg-white text-[18px] text-[#171717] transition-colors hover:border-[#171717] hover:bg-[#f5f1ea]"
+              >
+                <FiChevronLeft />
+              </button>
+
+              <button
+                type="button"
+                onClick={handleNext}
+                aria-label="Proximo produto"
+                className="inline-flex size-11 items-center justify-center rounded-full border border-black/12 bg-white text-[18px] text-[#171717] transition-colors hover:border-[#171717] hover:bg-[#f5f1ea]"
+              >
+                <FiChevronRight />
+              </button>
+            </div>
+          )}
+        </div>
+
+        <div
+          ref={trackRef}
+          className="mt-10 flex snap-x snap-mandatory gap-5 overflow-x-auto pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+        >
           {products.map((product) => (
             <article
               key={product.slug}
-              className="flex h-full w-full max-w-[320px] flex-col border border-[#d8d8d8] bg-white p-3 shadow-[0_6px_18px_rgba(23,23,23,0.04)]"
+              className="flex h-full w-[84vw] max-w-[320px] shrink-0 snap-start flex-col border border-[#d8d8d8] bg-white p-3 shadow-[0_6px_18px_rgba(23,23,23,0.04)] sm:w-[320px]"
             >
               <Link
                 href={`/produtos/${product.slug}`}
@@ -90,6 +189,22 @@ export default function HomeProductShelf({
             </article>
           ))}
         </div>
+
+        {products.length > 1 && (
+          <div className="mt-5 flex justify-center gap-2">
+            {products.map((product, index) => (
+              <button
+                key={product.slug}
+                type="button"
+                aria-label={`Ir para o produto ${index + 1}`}
+                onClick={() => scrollToCard(index)}
+                className={`h-2.5 rounded-full transition-all ${
+                  index === activeIndex ? "w-8 bg-[#17345c]" : "w-2.5 bg-black/18"
+                }`}
+              />
+            ))}
+          </div>
+        )}
       </div>
     </section>
   );

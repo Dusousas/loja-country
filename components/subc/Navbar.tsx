@@ -1,10 +1,6 @@
-"use client";
-
 import Link from "next/link";
-import { useState } from "react";
-import { FiMenu, FiX } from "react-icons/fi";
 
-const navItems = [
+export const navItems = [
   { href: "/categorias/masculino", label: "Masculino" },
   { href: "/categorias/feminino", label: "Feminino" },
   { href: "/categorias/infantil", label: "Infantil" },
@@ -20,27 +16,9 @@ const navItems = [
 ];
 
 export default function Navbar() {
-  const [isOpen, setIsOpen] = useState(false);
-
   return (
     <nav className="py-3 text-[#171717]">
-      <div className="flex items-center justify-between gap-4 lg:hidden">
-        <p className="text-[13px] font-semibold uppercase tracking-[0.14em]">
-          Categorias
-        </p>
-
-        <button
-          type="button"
-          aria-expanded={isOpen}
-          aria-label={isOpen ? "Fechar menu" : "Abrir menu"}
-          onClick={() => setIsOpen((current) => !current)}
-          className="inline-flex size-11 items-center justify-center rounded-full border border-black/12 text-[20px] transition-colors hover:border-[#171717] hover:bg-[#f5f1ea]"
-        >
-          {isOpen ? <FiX /> : <FiMenu />}
-        </button>
-      </div>
-
-      <ul className="hidden flex-wrap items-center justify-center gap-x-6 gap-y-3 text-center text-[13px] font-semibold uppercase tracking-[0.14em] lg:flex">
+      <ul className="flex flex-wrap items-center justify-center gap-x-6 gap-y-3 text-center text-[13px] font-semibold uppercase tracking-[0.14em]">
         {navItems.map((item) => (
           <li key={item.label}>
             <Link
@@ -52,24 +30,6 @@ export default function Navbar() {
           </li>
         ))}
       </ul>
-
-      {isOpen && (
-        <div className="mt-4 rounded-[24px] border border-black/10 bg-white p-4 shadow-[0_14px_34px_rgba(23,23,23,0.08)] lg:hidden">
-          <ul className="grid gap-2 sm:grid-cols-2">
-            {navItems.map((item) => (
-              <li key={item.label}>
-                <Link
-                  href={item.href}
-                  onClick={() => setIsOpen(false)}
-                  className="flex rounded-2xl border border-black/8 px-4 py-3 text-[13px] font-semibold uppercase tracking-[0.14em] transition-colors hover:border-[#8f5c3d] hover:text-[#8f5c3d]"
-                >
-                  {item.label}
-                </Link>
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
     </nav>
   );
 }
