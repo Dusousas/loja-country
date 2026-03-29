@@ -16,6 +16,7 @@ type CatalogProps = {
   query: string;
   initialIsOpen?: boolean;
   homeSectionLabels: Record<HomeSection, string>;
+  compact?: boolean;
 };
 
 function buildHref(page: number, query: string, keepOpen = false) {
@@ -46,6 +47,7 @@ export default function AdminProductCatalogModal({
   query,
   initialIsOpen = false,
   homeSectionLabels,
+  compact = false,
 }: CatalogProps) {
   const [isOpen, setIsOpen] = useState(initialIsOpen);
   const [selectedId, setSelectedId] = useState<number | null>(products[0]?.id ?? null);
@@ -77,56 +79,77 @@ export default function AdminProductCatalogModal({
 
   return (
     <>
-      <div className="rounded-[30px] border border-[#e5ddd5] bg-white p-6 shadow-[0_16px_48px_rgba(23,23,23,0.05)] sm:p-8">
-        <div className="flex flex-wrap items-end justify-between gap-4">
+      {compact ? (
+        <div className="mt-8 flex flex-wrap items-center justify-between gap-4 rounded-[24px] border border-[#eadfd5] bg-white px-5 py-4 shadow-[0_10px_24px_rgba(23,23,23,0.04)]">
           <div>
             <p className="text-xs font-semibold uppercase tracking-[0.22em] text-[#8f5c3d]">
               Catalogo
             </p>
-            <h2 className="mt-2 text-2xl font-semibold text-[#171717]">
-              Produtos cadastrados
-            </h2>
-          </div>
-          <p className="max-w-sm text-right text-[13px] leading-6 text-[#68788a]">
-            O painel principal fica limpo e a lista completa abre em pop-up.
-          </p>
-        </div>
-
-        <div className="mt-6 rounded-[26px] border border-[#ece3da] bg-[linear-gradient(180deg,#fcfbfa_0%,#f7f0e9_100%)] p-5">
-          <div className="grid gap-3 sm:grid-cols-3">
-            <div className="rounded-[20px] border border-white/70 bg-white/80 p-4">
-              <p className="text-xs uppercase tracking-[0.18em] text-[#8f5c3d]">
-                Total
-              </p>
-              <p className="mt-2 text-2xl font-semibold text-[#171717]">{totalCount}</p>
-            </div>
-            <div className="rounded-[20px] border border-white/70 bg-white/80 p-4">
-              <p className="text-xs uppercase tracking-[0.18em] text-[#8f5c3d]">
-                Exibindo
-              </p>
-              <p className="mt-2 text-2xl font-semibold text-[#171717]">
-                {firstItemIndex}-{lastItemIndex}
-              </p>
-            </div>
-            <div className="rounded-[20px] border border-white/70 bg-white/80 p-4">
-              <p className="text-xs uppercase tracking-[0.18em] text-[#8f5c3d]">
-                Busca
-              </p>
-              <p className="mt-2 text-lg font-semibold text-[#171717]">
-                {query || "Tudo"}
-              </p>
-            </div>
+            <p className="mt-1 text-sm leading-6 text-[#536273]">
+              {totalCount} produtos cadastrados. Abra a lista completa quando precisar.
+            </p>
           </div>
 
           <button
             type="button"
             onClick={() => setIsOpen(true)}
-            className="mt-5 inline-flex w-full items-center justify-center rounded-2xl bg-[#17345c] px-5 py-3 text-sm font-semibold uppercase tracking-[0.18em] text-white transition-colors hover:bg-[#21497d]"
+            className="inline-flex items-center justify-center rounded-2xl bg-[#17345c] px-5 py-3 text-sm font-semibold uppercase tracking-[0.18em] text-white transition-colors hover:bg-[#21497d]"
           >
             Abrir lista de produtos
           </button>
         </div>
-      </div>
+      ) : (
+        <div className="rounded-[30px] border border-[#e5ddd5] bg-white p-6 shadow-[0_16px_48px_rgba(23,23,23,0.05)] sm:p-8">
+          <div className="flex flex-wrap items-end justify-between gap-4">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-[0.22em] text-[#8f5c3d]">
+                Catalogo
+              </p>
+              <h2 className="mt-2 text-2xl font-semibold text-[#171717]">
+                Produtos cadastrados
+              </h2>
+            </div>
+            <p className="max-w-sm text-right text-[13px] leading-6 text-[#68788a]">
+              O painel principal fica limpo e a lista completa abre em pop-up.
+            </p>
+          </div>
+
+          <div className="mt-6 rounded-[26px] border border-[#ece3da] bg-[linear-gradient(180deg,#fcfbfa_0%,#f7f0e9_100%)] p-5">
+            <div className="grid gap-3 sm:grid-cols-3">
+              <div className="rounded-[20px] border border-white/70 bg-white/80 p-4">
+                <p className="text-xs uppercase tracking-[0.18em] text-[#8f5c3d]">
+                  Total
+                </p>
+                <p className="mt-2 text-2xl font-semibold text-[#171717]">{totalCount}</p>
+              </div>
+              <div className="rounded-[20px] border border-white/70 bg-white/80 p-4">
+                <p className="text-xs uppercase tracking-[0.18em] text-[#8f5c3d]">
+                  Exibindo
+                </p>
+                <p className="mt-2 text-2xl font-semibold text-[#171717]">
+                  {firstItemIndex}-{lastItemIndex}
+                </p>
+              </div>
+              <div className="rounded-[20px] border border-white/70 bg-white/80 p-4">
+                <p className="text-xs uppercase tracking-[0.18em] text-[#8f5c3d]">
+                  Busca
+                </p>
+                <p className="mt-2 text-lg font-semibold text-[#171717]">
+                  {query || "Tudo"}
+                </p>
+              </div>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => setIsOpen(true)}
+              className="mt-5 inline-flex w-full items-center justify-center rounded-2xl bg-[#17345c] px-5 py-3 text-sm font-semibold uppercase tracking-[0.18em] text-white transition-colors hover:bg-[#21497d]"
+            >
+              Abrir lista de produtos
+            </button>
+          </div>
+        </div>
+      )}
 
       {isOpen && (
         <div className="fixed inset-0 z-50 bg-[#171717]/55 px-4 py-6 backdrop-blur-sm sm:px-6">

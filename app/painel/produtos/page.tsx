@@ -149,7 +149,19 @@ export default async function ProductAdminPage({
           </div>
         )}
 
-        <div className="mt-8 grid gap-8 xl:grid-cols-[minmax(0,1.15fr)_380px]">
+        <AdminProductCatalogModal
+          products={catalog.products}
+          page={catalog.page}
+          totalPages={catalog.totalPages}
+          totalCount={catalog.totalCount}
+          pageSize={catalog.pageSize}
+          query={catalog.query}
+          initialIsOpen={params.catalog === "1"}
+          homeSectionLabels={homeSectionLabels}
+          compact
+        />
+
+        <div className="mt-8">
           <div className="rounded-[30px] border border-[#e5ddd5] bg-white p-6 shadow-[0_16px_48px_rgba(23,23,23,0.05)] sm:p-8">
             <div className="flex flex-wrap items-end justify-between gap-4">
               <div>
@@ -166,7 +178,7 @@ export default async function ProductAdminPage({
               </p>
             </div>
 
-            <div className="mt-8 grid gap-8 2xl:grid-cols-[minmax(0,1fr)_360px]">
+            <div className="mt-8 grid gap-8 xl:grid-cols-[minmax(0,1fr)_360px]">
               <form
                 id="product-create-form"
                 action={createProductFromPanel}
@@ -451,17 +463,6 @@ export default async function ProductAdminPage({
               />
             </div>
           </div>
-
-          <AdminProductCatalogModal
-            products={catalog.products}
-            page={catalog.page}
-            totalPages={catalog.totalPages}
-            totalCount={catalog.totalCount}
-            pageSize={catalog.pageSize}
-            query={catalog.query}
-            initialIsOpen={params.catalog === "1"}
-            homeSectionLabels={homeSectionLabels}
-          />
         </div>
       </div>
     </section>
