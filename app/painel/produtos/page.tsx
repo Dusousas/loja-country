@@ -1,5 +1,6 @@
-import Image from "next/image";
 import Link from "next/link";
+import AdminProductCatalogModal from "@/components/admin/AdminProductCatalogModal";
+import AdminProductLivePreview from "@/components/admin/AdminProductLivePreview";
 import ColorFields from "@/components/admin/ColorFields";
 import SubmitButton from "@/components/admin/SubmitButton";
 import { requireAdminAuthentication } from "@/lib/admin-auth";
@@ -9,12 +10,7 @@ import {
   panelPrimaryCategoryOptions,
   panelProductCategoryOptions,
 } from "@/lib/products";
-import {
-  createProductFromPanel,
-  deleteProductFromPanel,
-  logoutFromAdminPanel,
-  toggleHomeSectionFromPanel,
-} from "./actions";
+import { createProductFromPanel, logoutFromAdminPanel } from "./actions";
 
 export const dynamic = "force-dynamic";
 
@@ -25,6 +21,7 @@ type ProductAdminPageProps = {
     message?: string;
     q?: string;
     page?: string;
+    catalog?: string;
   }>;
 };
 
@@ -42,9 +39,10 @@ export default async function ProductAdminPage({
   const params = searchParams ? await searchParams : {};
   const query = typeof params.q === "string" ? params.q.trim() : "";
   const requestedPage = Number(params.page);
-  const page = Number.isFinite(requestedPage) && requestedPage > 0
-    ? Math.floor(requestedPage)
-    : 1;
+  const page =
+    Number.isFinite(requestedPage) && requestedPage > 0
+      ? Math.floor(requestedPage)
+      : 1;
 
   const [summary, catalog] = await Promise.all([
     getAdminDashboardSummary(),
@@ -54,29 +52,6 @@ export default async function ProductAdminPage({
       query,
     }),
   ]);
-
-  const adminProducts = catalog.products;
-  const firstItemIndex =
-    catalog.totalCount === 0 ? 0 : (catalog.page - 1) * catalog.pageSize + 1;
-  const lastItemIndex =
-    catalog.totalCount === 0
-      ? 0
-      : Math.min(catalog.page * catalog.pageSize, catalog.totalCount);
-
-  function getCatalogHref(nextPage: number) {
-    const hrefParams = new URLSearchParams();
-
-    if (query) {
-      hrefParams.set("q", query);
-    }
-
-    if (nextPage > 1) {
-      hrefParams.set("page", String(nextPage));
-    }
-
-    const hrefQuery = hrefParams.toString();
-    return hrefQuery ? `/painel/produtos?${hrefQuery}` : "/painel/produtos";
-  }
 
   return (
     <section className="py-8 sm:py-10">
@@ -88,14 +63,12 @@ export default async function ProductAdminPage({
                 Painel de produtos
               </p>
               <h1 className="mt-3 text-3xl font-semibold leading-tight text-[#171717] sm:text-4xl">
-                Cadastro dinamico com banco de dados, upload de imagens e vitrines da home.
+                Cadastro dinamico com previa ao vivo e lista pop-up.
               </h1>
               <p className="mt-4 text-[15px] leading-7 text-[#536273]">
-                O cliente consegue cadastrar produtos, subir imagens direto do
-                computador e marcar se o item deve aparecer em Promocoes,
-                Chapeus ou Infantil. Cada vitrine mostra no maximo quatro
-                produtos e os mais antigos saem automaticamente quando novos
-                itens sao marcados.
+                Cadastre produtos com upload direto do computador, acompanhe a
+                previa visual do item antes de salvar e abra a lista completa de
+                produtos em um modal com detalhes, destaques da home e remocao.
               </p>
             </div>
 
@@ -176,7 +149,7 @@ export default async function ProductAdminPage({
           </div>
         )}
 
-        <div className="mt-8 grid gap-8 xl:grid-cols-[minmax(0,1.05fr)_minmax(360px,0.95fr)]">
+        <div className="mt-8 grid gap-8 xl:grid-cols-[minmax(0,1.15fr)_380px]">
           <div className="rounded-[30px] border border-[#e5ddd5] bg-white p-6 shadow-[0_16px_48px_rgba(23,23,23,0.05)] sm:p-8">
             <div className="flex flex-wrap items-end justify-between gap-4">
               <div>
@@ -188,489 +161,307 @@ export default async function ProductAdminPage({
                 </h2>
               </div>
               <p className="max-w-md text-right text-[13px] leading-6 text-[#68788a]">
-                As imagens sobem direto para o servidor. Cores podem ser
-                escolhidas por picker visual ou pelos atalhos prontos.
+                O formulario continua completo, mas agora voce acompanha a
+                previa do produto enquanto preenche.
               </p>
             </div>
 
-            <form
-              action={createProductFromPanel}
-              encType="multipart/form-data"
-              className="mt-8 grid gap-8"
-            >
-              <div className="rounded-[24px] border border-[#eee4da] bg-[#fcfaf8] p-5">
-                <h3 className="text-lg font-semibold text-[#171717]">
-                  Informacoes principais
-                </h3>
-                <div className="mt-5 grid gap-5 md:grid-cols-2">
-                  <label className="block">
-                    <span className="mb-2 block text-sm font-semibold text-[#17345c]">
-                      Marca
-                    </span>
-                    <input
-                      type="text"
-                      name="brand"
-                      required
-                      className="w-full rounded-2xl border border-[#d7dfe6] bg-white px-4 py-3 text-[15px] text-[#171717] outline-none transition-colors focus:border-[#17345c]"
-                    />
-                  </label>
-
-                  <label className="block">
-                    <span className="mb-2 block text-sm font-semibold text-[#17345c]">
-                      Nome do produto
-                    </span>
-                    <input
-                      type="text"
-                      name="name"
-                      required
-                      className="w-full rounded-2xl border border-[#d7dfe6] bg-white px-4 py-3 text-[15px] text-[#171717] outline-none transition-colors focus:border-[#17345c]"
-                    />
-                  </label>
-
-                  <label className="block">
-                    <span className="mb-2 block text-sm font-semibold text-[#17345c]">
-                      Titulo do card
-                    </span>
-                    <input
-                      type="text"
-                      name="cardTitle"
-                      placeholder="Se vazio, usa o nome do produto"
-                      className="w-full rounded-2xl border border-[#d7dfe6] bg-white px-4 py-3 text-[15px] text-[#171717] outline-none transition-colors focus:border-[#17345c]"
-                    />
-                  </label>
-
-                  <label className="block">
-                    <span className="mb-2 block text-sm font-semibold text-[#17345c]">
-                      Slug
-                    </span>
-                    <input
-                      type="text"
-                      name="slug"
-                      placeholder="Opcional, gerado automaticamente"
-                      className="w-full rounded-2xl border border-[#d7dfe6] bg-white px-4 py-3 text-[15px] text-[#171717] outline-none transition-colors focus:border-[#17345c]"
-                    />
-                  </label>
-                </div>
-              </div>
-
-              <div className="rounded-[24px] border border-[#eee4da] bg-[#fcfaf8] p-5">
-                <h3 className="text-lg font-semibold text-[#171717]">
-                  Organizacao da loja
-                </h3>
-                <div className="mt-5 grid gap-5 md:grid-cols-2">
-                  <label className="block">
-                    <span className="mb-2 block text-sm font-semibold text-[#17345c]">
-                      Categoria principal
-                    </span>
-                    <select
-                      name="primaryGroup"
-                      required
-                      defaultValue="masculino"
-                      className="w-full rounded-2xl border border-[#d7dfe6] bg-white px-4 py-3 text-[15px] text-[#171717] outline-none transition-colors focus:border-[#17345c]"
-                    >
-                      {panelPrimaryCategoryOptions.map((category) => (
-                        <option key={category.slug} value={category.slug}>
-                          {category.label}
-                        </option>
-                      ))}
-                    </select>
-                  </label>
-
-                  <label className="block">
-                    <span className="mb-2 block text-sm font-semibold text-[#17345c]">
-                      Categoria do produto
-                    </span>
-                    <select
-                      name="categorySlug"
-                      required
-                      defaultValue="blusas"
-                      className="w-full rounded-2xl border border-[#d7dfe6] bg-white px-4 py-3 text-[15px] text-[#171717] outline-none transition-colors focus:border-[#17345c]"
-                    >
-                      {panelProductCategoryOptions.map((category) => (
-                        <option key={category.slug} value={category.slug}>
-                          {category.label}
-                        </option>
-                      ))}
-                    </select>
-                  </label>
-                </div>
-              </div>
-
-              <div className="rounded-[24px] border border-[#eee4da] bg-[#fcfaf8] p-5">
-                <h3 className="text-lg font-semibold text-[#171717]">
-                  Midia
-                </h3>
-                <div className="mt-5 grid gap-5 md:grid-cols-2">
-                  <label className="block">
-                    <span className="mb-2 block text-sm font-semibold text-[#17345c]">
-                      Imagem principal
-                    </span>
-                    <input
-                      type="file"
-                      name="mainImage"
-                      accept="image/png,image/jpeg,image/webp,image/avif"
-                      required
-                      className="w-full rounded-2xl border border-dashed border-[#c9d4df] bg-white px-4 py-3 text-[14px] text-[#171717] file:mr-4 file:rounded-full file:border-0 file:bg-[#17345c] file:px-4 file:py-2 file:text-sm file:font-semibold file:text-white hover:file:bg-[#21497d]"
-                    />
-                  </label>
-
-                  <label className="block">
-                    <span className="mb-2 block text-sm font-semibold text-[#17345c]">
-                      Galeria adicional
-                    </span>
-                    <input
-                      type="file"
-                      name="galleryFiles"
-                      accept="image/png,image/jpeg,image/webp,image/avif"
-                      multiple
-                      className="w-full rounded-2xl border border-dashed border-[#c9d4df] bg-white px-4 py-3 text-[14px] text-[#171717] file:mr-4 file:rounded-full file:border-0 file:bg-[#e7eef6] file:px-4 file:py-2 file:text-sm file:font-semibold file:text-[#17345c] hover:file:bg-[#dce7f2]"
-                    />
-                  </label>
-                </div>
-              </div>
-
-              <div className="rounded-[24px] border border-[#eee4da] bg-[#fcfaf8] p-5">
-                <h3 className="text-lg font-semibold text-[#171717]">
-                  Precos, cor e tamanhos
-                </h3>
-                <div className="mt-5 grid gap-5 md:grid-cols-3">
-                  <label className="block">
-                    <span className="mb-2 block text-sm font-semibold text-[#17345c]">
-                      Preco original
-                    </span>
-                    <input
-                      type="text"
-                      name="originalPrice"
-                      required
-                      placeholder="R$189,90"
-                      className="w-full rounded-2xl border border-[#d7dfe6] bg-white px-4 py-3 text-[15px] text-[#171717] outline-none transition-colors focus:border-[#17345c]"
-                    />
-                  </label>
-
-                  <label className="block">
-                    <span className="mb-2 block text-sm font-semibold text-[#17345c]">
-                      Preco de venda
-                    </span>
-                    <input
-                      type="text"
-                      name="price"
-                      required
-                      placeholder="R$170,43"
-                      className="w-full rounded-2xl border border-[#d7dfe6] bg-white px-4 py-3 text-[15px] text-[#171717] outline-none transition-colors focus:border-[#17345c]"
-                    />
-                  </label>
-
-                  <label className="block">
-                    <span className="mb-2 block text-sm font-semibold text-[#17345c]">
-                      Preco Pix
-                    </span>
-                    <input
-                      type="text"
-                      name="pixPrice"
-                      required
-                      placeholder="R$161,91"
-                      className="w-full rounded-2xl border border-[#d7dfe6] bg-white px-4 py-3 text-[15px] text-[#171717] outline-none transition-colors focus:border-[#17345c]"
-                    />
-                  </label>
-                </div>
-
-                <div className="mt-5 grid gap-5 md:grid-cols-2">
-                  <label className="block">
-                    <span className="mb-2 block text-sm font-semibold text-[#17345c]">
-                      Label do Pix
-                    </span>
-                    <input
-                      type="text"
-                      name="pixLabel"
-                      placeholder="5% OFF a vista no Pix"
-                      className="w-full rounded-2xl border border-[#d7dfe6] bg-white px-4 py-3 text-[15px] text-[#171717] outline-none transition-colors focus:border-[#17345c]"
-                    />
-                  </label>
-
-                  <label className="block">
-                    <span className="mb-2 block text-sm font-semibold text-[#17345c]">
-                      Parcelamento
-                    </span>
-                    <input
-                      type="text"
-                      name="installments"
-                      placeholder="Parcelamento em ate 12x com juros"
-                      className="w-full rounded-2xl border border-[#d7dfe6] bg-white px-4 py-3 text-[15px] text-[#171717] outline-none transition-colors focus:border-[#17345c]"
-                    />
-                  </label>
-                </div>
-
-                <ColorFields />
-
-                <label className="mt-5 block">
-                  <span className="mb-2 block text-sm font-semibold text-[#17345c]">
-                    Tamanhos
-                  </span>
-                  <textarea
-                    name="sizes"
-                    required
-                    rows={3}
-                    placeholder={"P, M, G\nou um por linha"}
-                    className="w-full rounded-2xl border border-[#d7dfe6] bg-white px-4 py-3 text-[15px] text-[#171717] outline-none transition-colors focus:border-[#17345c]"
-                  />
-                </label>
-              </div>
-
-              <div className="rounded-[24px] border border-[#eee4da] bg-[#fcfaf8] p-5">
-                <h3 className="text-lg font-semibold text-[#171717]">
-                  Home e descricao
-                </h3>
-
-                <div className="mt-5 grid gap-3 sm:grid-cols-3">
-                  {(["promocoes", "chapeus", "infantil"] as const).map((section) => (
-                    <label
-                      key={section}
-                      className="flex items-center gap-3 rounded-2xl border border-[#d7dfe6] bg-white px-4 py-3 text-sm font-medium text-[#171717]"
-                    >
-                      <input
-                        type="checkbox"
-                        name="homeSections"
-                        value={section}
-                        className="size-4 accent-[#17345c]"
-                      />
-                      <span>{homeSectionLabels[section]}</span>
-                    </label>
-                  ))}
-                </div>
-
-                <p className="mt-3 text-[13px] leading-6 text-[#68788a]">
-                  Cada vitrine da home mostra no maximo quatro produtos. Ao
-                  marcar um novo, os mais antigos saem automaticamente.
-                </p>
-
-                <label className="mt-5 block">
-                  <span className="mb-2 block text-sm font-semibold text-[#17345c]">
-                    Descricao
-                  </span>
-                  <textarea
-                    name="description"
-                    required
-                    rows={5}
-                    className="w-full rounded-2xl border border-[#d7dfe6] bg-white px-4 py-3 text-[15px] text-[#171717] outline-none transition-colors focus:border-[#17345c]"
-                  />
-                </label>
-              </div>
-
-              <SubmitButton
-                pendingLabel="Salvando produto..."
-                className="inline-flex w-full items-center justify-center rounded-2xl bg-[#17345c] px-5 py-3.5 text-sm font-semibold uppercase tracking-[0.18em] text-white transition-colors hover:bg-[#21497d] disabled:cursor-not-allowed disabled:bg-[#9eb1c7]"
+            <div className="mt-8 grid gap-8 2xl:grid-cols-[minmax(0,1fr)_360px]">
+              <form
+                id="product-create-form"
+                action={createProductFromPanel}
+                encType="multipart/form-data"
+                className="grid gap-8"
               >
-                Cadastrar produto
-              </SubmitButton>
-            </form>
-          </div>
-
-          <div className="rounded-[30px] border border-[#e5ddd5] bg-white p-6 shadow-[0_16px_48px_rgba(23,23,23,0.05)] sm:p-8">
-            <div className="flex flex-wrap items-end justify-between gap-4">
-              <div>
-                <p className="text-xs font-semibold uppercase tracking-[0.22em] text-[#8f5c3d]">
-                  Catalogo
-                </p>
-                <h2 className="mt-2 text-2xl font-semibold text-[#171717]">
-                  Produtos cadastrados
-                </h2>
-              </div>
-              <div className="text-right text-[13px] leading-6 text-[#68788a]">
-                <p>Busque, pagine e remova produtos sem deixar o painel gigante.</p>
-                <p>
-                  Exibindo {firstItemIndex}-{lastItemIndex} de {catalog.totalCount}.
-                </p>
-              </div>
-            </div>
-
-            <div className="mt-6 rounded-[24px] border border-[#ece3da] bg-[#fcfbfa] p-4">
-              <form className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto_auto]">
-                <label className="block">
-                  <span className="mb-2 block text-xs font-semibold uppercase tracking-[0.18em] text-[#8f5c3d]">
-                    Buscar no catalogo
-                  </span>
-                  <input
-                    type="search"
-                    name="q"
-                    defaultValue={query}
-                    placeholder="Nome, marca, slug ou categoria"
-                    className="w-full rounded-2xl border border-[#d7dfe6] bg-white px-4 py-3 text-[15px] text-[#171717] outline-none transition-colors focus:border-[#17345c]"
-                  />
-                </label>
-
-                <div className="flex items-end">
-                  <button
-                    type="submit"
-                    className="inline-flex w-full items-center justify-center rounded-2xl bg-[#17345c] px-5 py-3 text-xs font-semibold uppercase tracking-[0.18em] text-white transition-colors hover:bg-[#21497d] sm:w-auto"
-                  >
-                    Buscar
-                  </button>
-                </div>
-
-                <div className="flex items-end">
-                  <Link
-                    href="/painel/produtos"
-                    className="inline-flex w-full items-center justify-center rounded-2xl border border-[#d8c9bb] bg-white px-5 py-3 text-xs font-semibold uppercase tracking-[0.18em] text-[#17345c] transition-colors hover:border-[#17345c] sm:w-auto"
-                  >
-                    Limpar
-                  </Link>
-                </div>
-              </form>
-            </div>
-
-            <div className="mt-6 space-y-4">
-              {catalog.totalCount === 0 && !query && (
-                <div className="rounded-2xl border border-dashed border-[#d9d0c7] bg-[#fcfbfa] px-5 py-8 text-sm leading-6 text-[#536273]">
-                  Nenhum produto cadastrado ainda.
-                </div>
-              )}
-
-              {catalog.totalCount === 0 && query && (
-                <div className="rounded-2xl border border-dashed border-[#d9d0c7] bg-[#fcfbfa] px-5 py-8 text-sm leading-6 text-[#536273]">
-                  Nenhum produto encontrado para <span className="font-semibold">{query}</span>.
-                </div>
-              )}
-
-              {adminProducts.map((product) => (
-                <article
-                  key={product.id}
-                  className="rounded-[24px] border border-[#ece3da] bg-[#fcfbfa] p-4"
-                >
-                  <div className="flex gap-4">
-                    <div className="relative hidden h-[112px] w-[92px] overflow-hidden rounded-[18px] border border-[#eadfd5] bg-white sm:block">
-                      <Image
-                        src={product.image}
-                        alt={product.name}
-                        fill
-                        className="object-cover"
+                <div className="rounded-[24px] border border-[#eee4da] bg-[#fcfaf8] p-5">
+                  <h3 className="text-lg font-semibold text-[#171717]">
+                    Informacoes principais
+                  </h3>
+                  <div className="mt-5 grid gap-5 md:grid-cols-2">
+                    <label className="block">
+                      <span className="mb-2 block text-sm font-semibold text-[#17345c]">
+                        Marca
+                      </span>
+                      <input
+                        type="text"
+                        name="brand"
+                        required
+                        className="w-full rounded-2xl border border-[#d7dfe6] bg-white px-4 py-3 text-[15px] text-[#171717] outline-none transition-colors focus:border-[#17345c]"
                       />
-                    </div>
+                    </label>
 
-                    <div className="min-w-0 flex-1">
-                      <div className="flex flex-wrap items-start justify-between gap-3">
-                        <div>
-                          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#8f5c3d]">
-                            {product.brand}
-                          </p>
-                          <h3 className="mt-2 text-lg font-semibold text-[#171717]">
-                            {product.name}
-                          </h3>
-                          <p className="mt-2 text-sm text-[#536273]">
-                            {product.category} | {product.price}
-                          </p>
-                        </div>
+                    <label className="block">
+                      <span className="mb-2 block text-sm font-semibold text-[#17345c]">
+                        Nome do produto
+                      </span>
+                      <input
+                        type="text"
+                        name="name"
+                        required
+                        className="w-full rounded-2xl border border-[#d7dfe6] bg-white px-4 py-3 text-[15px] text-[#171717] outline-none transition-colors focus:border-[#17345c]"
+                      />
+                    </label>
 
-                        <div className="flex flex-wrap gap-2">
-                          <Link
-                            href={`/produtos/${product.slug}`}
-                            className="inline-flex rounded-full border border-[#d8c9bb] bg-white px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.14em] text-[#17345c] transition-colors hover:border-[#17345c]"
-                          >
-                            Ver produto
-                          </Link>
+                    <label className="block">
+                      <span className="mb-2 block text-sm font-semibold text-[#17345c]">
+                        Titulo do card
+                      </span>
+                      <input
+                        type="text"
+                        name="cardTitle"
+                        placeholder="Se vazio, usa o nome do produto"
+                        className="w-full rounded-2xl border border-[#d7dfe6] bg-white px-4 py-3 text-[15px] text-[#171717] outline-none transition-colors focus:border-[#17345c]"
+                      />
+                    </label>
 
-                          <form action={deleteProductFromPanel}>
-                            <input type="hidden" name="productId" value={product.id} />
-                            <input type="hidden" name="page" value={catalog.page} />
-                            <input type="hidden" name="query" value={query} />
-                            <SubmitButton
-                              pendingLabel="Removendo..."
-                              confirmMessage={`Remover "${product.name}" da loja e do painel?`}
-                              className="inline-flex rounded-full border border-[#e1b8b8] bg-white px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.14em] text-[#a33d3d] transition-colors hover:border-[#a33d3d] hover:bg-[#fff5f5]"
-                            >
-                              Excluir produto
-                            </SubmitButton>
-                          </form>
-                        </div>
-                      </div>
-
-                      <div className="mt-4 flex flex-wrap gap-2">
-                        {product.homeSections.length === 0 && (
-                          <span className="rounded-full bg-white px-3 py-1 text-xs font-semibold uppercase tracking-[0.14em] text-[#8c98a8]">
-                            Sem destaque na home
-                          </span>
-                        )}
-
-                        {product.homeSections.map((section) => (
-                          <span
-                            key={section}
-                            className="rounded-full bg-[#17345c] px-3 py-1 text-xs font-semibold uppercase tracking-[0.14em] text-white"
-                          >
-                            {homeSectionLabels[section]}
-                          </span>
-                        ))}
-                      </div>
-
-                      <div className="mt-4 grid gap-2 sm:grid-cols-3">
-                        {(["promocoes", "chapeus", "infantil"] as const).map((section) => {
-                          const isEnabled = product.homeSections.includes(section);
-
-                          return (
-                            <form key={section} action={toggleHomeSectionFromPanel}>
-                              <input type="hidden" name="productId" value={product.id} />
-                              <input type="hidden" name="section" value={section} />
-                              <input type="hidden" name="page" value={catalog.page} />
-                              <input type="hidden" name="query" value={query} />
-                              <input
-                                type="hidden"
-                                name="enabled"
-                                value={isEnabled ? "false" : "true"}
-                              />
-                              <SubmitButton
-                                pendingLabel="Atualizando..."
-                                className={`inline-flex w-full items-center justify-center rounded-2xl px-4 py-2.5 text-xs font-semibold uppercase tracking-[0.16em] transition-colors ${
-                                  isEnabled
-                                    ? "border border-[#17345c] bg-[#17345c] text-white hover:bg-[#21497d]"
-                                    : "border border-[#d8c9bb] bg-white text-[#17345c] hover:border-[#17345c]"
-                                }`}
-                              >
-                                {isEnabled
-                                  ? `Remover ${homeSectionLabels[section]}`
-                                  : `Destacar ${homeSectionLabels[section]}`}
-                              </SubmitButton>
-                            </form>
-                          );
-                        })}
-                      </div>
-                    </div>
+                    <label className="block">
+                      <span className="mb-2 block text-sm font-semibold text-[#17345c]">
+                        Slug
+                      </span>
+                      <input
+                        type="text"
+                        name="slug"
+                        placeholder="Opcional, gerado automaticamente"
+                        className="w-full rounded-2xl border border-[#d7dfe6] bg-white px-4 py-3 text-[15px] text-[#171717] outline-none transition-colors focus:border-[#17345c]"
+                      />
+                    </label>
                   </div>
-                </article>
-              ))}
-            </div>
-
-            {catalog.totalPages > 1 && (
-              <div className="mt-6 flex flex-wrap items-center justify-between gap-4 rounded-[24px] border border-[#ece3da] bg-[#fcfbfa] px-4 py-4">
-                <p className="text-sm text-[#536273]">
-                  Pagina {catalog.page} de {catalog.totalPages}
-                </p>
-
-                <div className="flex flex-wrap items-center gap-2">
-                  <Link
-                    href={getCatalogHref(catalog.page - 1)}
-                    aria-disabled={catalog.page <= 1}
-                    className={`inline-flex items-center justify-center rounded-full px-4 py-2 text-xs font-semibold uppercase tracking-[0.16em] ${
-                      catalog.page <= 1
-                        ? "pointer-events-none border border-[#e7ddd3] bg-white text-[#b6b0a9]"
-                        : "border border-[#d8c9bb] bg-white text-[#17345c] transition-colors hover:border-[#17345c]"
-                    }`}
-                  >
-                    Anterior
-                  </Link>
-
-                  <Link
-                    href={getCatalogHref(catalog.page + 1)}
-                    aria-disabled={catalog.page >= catalog.totalPages}
-                    className={`inline-flex items-center justify-center rounded-full px-4 py-2 text-xs font-semibold uppercase tracking-[0.16em] ${
-                      catalog.page >= catalog.totalPages
-                        ? "pointer-events-none border border-[#e7ddd3] bg-white text-[#b6b0a9]"
-                        : "border border-[#17345c] bg-[#17345c] text-white transition-colors hover:bg-[#21497d]"
-                    }`}
-                  >
-                    Proxima
-                  </Link>
                 </div>
-              </div>
-            )}
+
+                <div className="rounded-[24px] border border-[#eee4da] bg-[#fcfaf8] p-5">
+                  <h3 className="text-lg font-semibold text-[#171717]">
+                    Organizacao da loja
+                  </h3>
+                  <div className="mt-5 grid gap-5 md:grid-cols-2">
+                    <label className="block">
+                      <span className="mb-2 block text-sm font-semibold text-[#17345c]">
+                        Categoria principal
+                      </span>
+                      <select
+                        name="primaryGroup"
+                        required
+                        defaultValue="masculino"
+                        className="w-full rounded-2xl border border-[#d7dfe6] bg-white px-4 py-3 text-[15px] text-[#171717] outline-none transition-colors focus:border-[#17345c]"
+                      >
+                        {panelPrimaryCategoryOptions.map((category) => (
+                          <option key={category.slug} value={category.slug}>
+                            {category.label}
+                          </option>
+                        ))}
+                      </select>
+                    </label>
+
+                    <label className="block">
+                      <span className="mb-2 block text-sm font-semibold text-[#17345c]">
+                        Categoria do produto
+                      </span>
+                      <select
+                        name="categorySlug"
+                        required
+                        defaultValue="blusas"
+                        className="w-full rounded-2xl border border-[#d7dfe6] bg-white px-4 py-3 text-[15px] text-[#171717] outline-none transition-colors focus:border-[#17345c]"
+                      >
+                        {panelProductCategoryOptions.map((category) => (
+                          <option key={category.slug} value={category.slug}>
+                            {category.label}
+                          </option>
+                        ))}
+                      </select>
+                    </label>
+                  </div>
+                </div>
+
+                <div className="rounded-[24px] border border-[#eee4da] bg-[#fcfaf8] p-5">
+                  <h3 className="text-lg font-semibold text-[#171717]">Midia</h3>
+                  <div className="mt-5 grid gap-5 md:grid-cols-2">
+                    <label className="block">
+                      <span className="mb-2 block text-sm font-semibold text-[#17345c]">
+                        Imagem principal
+                      </span>
+                      <input
+                        type="file"
+                        name="mainImage"
+                        accept="image/png,image/jpeg,image/webp,image/avif"
+                        required
+                        className="w-full rounded-2xl border border-dashed border-[#c9d4df] bg-white px-4 py-3 text-[14px] text-[#171717] file:mr-4 file:rounded-full file:border-0 file:bg-[#17345c] file:px-4 file:py-2 file:text-sm file:font-semibold file:text-white hover:file:bg-[#21497d]"
+                      />
+                    </label>
+
+                    <label className="block">
+                      <span className="mb-2 block text-sm font-semibold text-[#17345c]">
+                        Galeria adicional
+                      </span>
+                      <input
+                        type="file"
+                        name="galleryFiles"
+                        accept="image/png,image/jpeg,image/webp,image/avif"
+                        multiple
+                        className="w-full rounded-2xl border border-dashed border-[#c9d4df] bg-white px-4 py-3 text-[14px] text-[#171717] file:mr-4 file:rounded-full file:border-0 file:bg-[#e7eef6] file:px-4 file:py-2 file:text-sm file:font-semibold file:text-[#17345c] hover:file:bg-[#dce7f2]"
+                      />
+                    </label>
+                  </div>
+                </div>
+
+                <div className="rounded-[24px] border border-[#eee4da] bg-[#fcfaf8] p-5">
+                  <h3 className="text-lg font-semibold text-[#171717]">
+                    Precos, cor e tamanhos
+                  </h3>
+                  <div className="mt-5 grid gap-5 md:grid-cols-3">
+                    <label className="block">
+                      <span className="mb-2 block text-sm font-semibold text-[#17345c]">
+                        Preco original
+                      </span>
+                      <input
+                        type="text"
+                        name="originalPrice"
+                        required
+                        placeholder="R$189,90"
+                        className="w-full rounded-2xl border border-[#d7dfe6] bg-white px-4 py-3 text-[15px] text-[#171717] outline-none transition-colors focus:border-[#17345c]"
+                      />
+                    </label>
+
+                    <label className="block">
+                      <span className="mb-2 block text-sm font-semibold text-[#17345c]">
+                        Preco de venda
+                      </span>
+                      <input
+                        type="text"
+                        name="price"
+                        required
+                        placeholder="R$170,43"
+                        className="w-full rounded-2xl border border-[#d7dfe6] bg-white px-4 py-3 text-[15px] text-[#171717] outline-none transition-colors focus:border-[#17345c]"
+                      />
+                    </label>
+
+                    <label className="block">
+                      <span className="mb-2 block text-sm font-semibold text-[#17345c]">
+                        Preco Pix
+                      </span>
+                      <input
+                        type="text"
+                        name="pixPrice"
+                        required
+                        placeholder="R$161,91"
+                        className="w-full rounded-2xl border border-[#d7dfe6] bg-white px-4 py-3 text-[15px] text-[#171717] outline-none transition-colors focus:border-[#17345c]"
+                      />
+                    </label>
+                  </div>
+
+                  <div className="mt-5 grid gap-5 md:grid-cols-2">
+                    <label className="block">
+                      <span className="mb-2 block text-sm font-semibold text-[#17345c]">
+                        Label do Pix
+                      </span>
+                      <input
+                        type="text"
+                        name="pixLabel"
+                        placeholder="5% OFF a vista no Pix"
+                        className="w-full rounded-2xl border border-[#d7dfe6] bg-white px-4 py-3 text-[15px] text-[#171717] outline-none transition-colors focus:border-[#17345c]"
+                      />
+                    </label>
+
+                    <label className="block">
+                      <span className="mb-2 block text-sm font-semibold text-[#17345c]">
+                        Parcelamento
+                      </span>
+                      <input
+                        type="text"
+                        name="installments"
+                        placeholder="Parcelamento em ate 12x com juros"
+                        className="w-full rounded-2xl border border-[#d7dfe6] bg-white px-4 py-3 text-[15px] text-[#171717] outline-none transition-colors focus:border-[#17345c]"
+                      />
+                    </label>
+                  </div>
+
+                  <ColorFields />
+
+                  <label className="mt-5 block">
+                    <span className="mb-2 block text-sm font-semibold text-[#17345c]">
+                      Tamanhos
+                    </span>
+                    <textarea
+                      name="sizes"
+                      required
+                      rows={3}
+                      placeholder={"P, M, G\nou um por linha"}
+                      className="w-full rounded-2xl border border-[#d7dfe6] bg-white px-4 py-3 text-[15px] text-[#171717] outline-none transition-colors focus:border-[#17345c]"
+                    />
+                  </label>
+                </div>
+
+                <div className="rounded-[24px] border border-[#eee4da] bg-[#fcfaf8] p-5">
+                  <h3 className="text-lg font-semibold text-[#171717]">
+                    Home e descricao
+                  </h3>
+
+                  <div className="mt-5 grid gap-3 sm:grid-cols-3">
+                    {(["promocoes", "chapeus", "infantil"] as const).map((section) => (
+                      <label
+                        key={section}
+                        className="flex items-center gap-3 rounded-2xl border border-[#d7dfe6] bg-white px-4 py-3 text-sm font-medium text-[#171717]"
+                      >
+                        <input
+                          type="checkbox"
+                          name="homeSections"
+                          value={section}
+                          className="size-4 accent-[#17345c]"
+                        />
+                        <span>{homeSectionLabels[section]}</span>
+                      </label>
+                    ))}
+                  </div>
+
+                  <p className="mt-3 text-[13px] leading-6 text-[#68788a]">
+                    Cada vitrine da home mostra no maximo quatro produtos. Ao
+                    marcar um novo, os mais antigos saem automaticamente.
+                  </p>
+
+                  <label className="mt-5 block">
+                    <span className="mb-2 block text-sm font-semibold text-[#17345c]">
+                      Descricao
+                    </span>
+                    <textarea
+                      name="description"
+                      required
+                      rows={5}
+                      className="w-full rounded-2xl border border-[#d7dfe6] bg-white px-4 py-3 text-[15px] text-[#171717] outline-none transition-colors focus:border-[#17345c]"
+                    />
+                  </label>
+                </div>
+
+                <SubmitButton
+                  pendingLabel="Salvando produto..."
+                  className="inline-flex w-full items-center justify-center rounded-2xl bg-[#17345c] px-5 py-3.5 text-sm font-semibold uppercase tracking-[0.18em] text-white transition-colors hover:bg-[#21497d] disabled:cursor-not-allowed disabled:bg-[#9eb1c7]"
+                >
+                  Cadastrar produto
+                </SubmitButton>
+              </form>
+
+              <AdminProductLivePreview
+                formId="product-create-form"
+                primaryOptions={panelPrimaryCategoryOptions.map((category) => ({
+                  slug: category.slug,
+                  label: category.label,
+                }))}
+                productOptions={panelProductCategoryOptions.map((category) => ({
+                  slug: category.slug,
+                  label: category.label,
+                }))}
+                homeSectionLabels={homeSectionLabels}
+              />
+            </div>
           </div>
+
+          <AdminProductCatalogModal
+            products={catalog.products}
+            page={catalog.page}
+            totalPages={catalog.totalPages}
+            totalCount={catalog.totalCount}
+            pageSize={catalog.pageSize}
+            query={catalog.query}
+            initialIsOpen={params.catalog === "1"}
+            homeSectionLabels={homeSectionLabels}
+          />
         </div>
       </div>
     </section>

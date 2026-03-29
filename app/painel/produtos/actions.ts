@@ -43,6 +43,7 @@ function buildPanelUrl(formData: FormData, extraParams?: Record<string, string>)
   const params = new URLSearchParams();
   const query = getString(formData, "query");
   const page = getString(formData, "page");
+  const catalog = getString(formData, "catalog");
 
   if (query) {
     params.set("q", query);
@@ -50,6 +51,10 @@ function buildPanelUrl(formData: FormData, extraParams?: Record<string, string>)
 
   if (page) {
     params.set("page", page);
+  }
+
+  if (catalog === "1") {
+    params.set("catalog", "1");
   }
 
   for (const [key, value] of Object.entries(extraParams ?? {})) {
