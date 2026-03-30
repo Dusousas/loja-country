@@ -27,9 +27,6 @@ export default async function AdminLoginPage({ searchParams }: LoginPageProps) {
               <h1 className="text-2xl font-semibold text-[#171717] sm:text-3xl">
                 Entrar no painel
               </h1>
-              <p className="mt-3 text-[15px] leading-7 text-[#536273]">
-                Use a senha definida em <code>ADMIN_PASSWORD</code>.
-              </p>
             </div>
 
             {!isConfigured && (
