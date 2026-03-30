@@ -72,12 +72,12 @@ export default async function ProductAdminPage({
                 Painel de produtos
               </p>
               <h1 className="mt-3 text-3xl font-semibold leading-tight text-[#171717] sm:text-4xl">
-                Cadastro dinamico com previa ao vivo e lista pop-up.
+                Cadastre e organize os produtos da loja em um so lugar.
               </h1>
               <p className="mt-4 text-[15px] leading-7 text-[#536273]">
-                Cadastre produtos com upload direto do computador, acompanhe a
-                previa visual do item antes de salvar e abra a lista completa de
-                produtos em um modal com detalhes, destaques da home e remocao.
+                Adicione novos produtos, revise as informacoes antes de salvar
+                e acompanhe tudo em uma lista pratica para manter a loja sempre
+                atualizada.
               </p>
             </div>
 
@@ -231,8 +231,8 @@ export default async function ProductAdminPage({
                 </h2>
               </div>
               <p className="max-w-md text-right text-[13px] leading-6 text-[#68788a]">
-                O formulario continua completo, mas agora voce acompanha a
-                previa do produto enquanto preenche.
+                Preencha os dados do produto com mais facilidade e confira tudo
+                antes de publicar.
               </p>
             </div>
 

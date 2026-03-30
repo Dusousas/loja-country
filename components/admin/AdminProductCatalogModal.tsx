@@ -111,7 +111,7 @@ export default function AdminProductCatalogModal({
               </h2>
             </div>
             <p className="max-w-sm text-right text-[13px] leading-6 text-[#68788a]">
-              O painel principal fica limpo e a lista completa abre em pop-up.
+              Consulte, edite e acompanhe os produtos da loja sempre que precisar.
             </p>
           </div>
 
