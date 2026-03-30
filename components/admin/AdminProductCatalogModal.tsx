@@ -173,8 +173,8 @@ export default function AdminProductCatalogModal({
               </button>
             </div>
 
-            <div className="grid min-h-0 flex-1 xl:grid-cols-[360px_minmax(0,1fr)]">
-              <aside className="flex min-h-0 flex-col border-b border-[#ebdfd4] bg-white xl:border-b-0 xl:border-r">
+            <div className="flex min-h-0 flex-1 flex-col xl:grid xl:grid-cols-[360px_minmax(0,1fr)]">
+              <aside className="flex max-h-[44vh] shrink-0 flex-col border-b border-[#ebdfd4] bg-white xl:max-h-none xl:min-h-0 xl:border-b-0 xl:border-r">
                 <div className="border-b border-[#ebdfd4] p-4">
                   <form action="/painel/produtos" className="grid gap-3">
                     <input type="hidden" name="catalog" value="1" />
@@ -295,9 +295,9 @@ export default function AdminProductCatalogModal({
                 )}
               </aside>
 
-              <div className="min-h-0 overflow-y-auto bg-[linear-gradient(180deg,#fffaf5_0%,#f6efe7_100%)] p-5 sm:p-6">
+              <div className="min-h-0 flex-1 overflow-y-auto bg-[linear-gradient(180deg,#fffaf5_0%,#f6efe7_100%)] p-4 sm:p-6">
                 {selectedProduct ? (
-                  <div className="grid gap-6 lg:grid-cols-[300px_minmax(0,1fr)]">
+                  <div className="grid gap-4 lg:grid-cols-[280px_minmax(0,1fr)] xl:grid-cols-[300px_minmax(0,1fr)] xl:gap-6">
                     <div className="overflow-hidden rounded-[28px] border border-[#dfd5ca] bg-white p-3 shadow-[0_10px_24px_rgba(23,23,23,0.05)]">
                       <div className="overflow-hidden rounded-[20px] border border-[#ececec] bg-[#f2f2f2]">
                         <Image
@@ -306,7 +306,7 @@ export default function AdminProductCatalogModal({
                           width={720}
                           height={900}
                           unoptimized={isUploadedImage(selectedProduct.image)}
-                          className="h-[340px] w-full object-cover"
+                          className="h-[260px] w-full object-cover sm:h-[340px]"
                         />
                       </div>
 
@@ -314,14 +314,14 @@ export default function AdminProductCatalogModal({
                         <p className="text-[13px] font-medium text-[#171717]">
                           {selectedProduct.brand}
                         </p>
-                        <h4 className="mx-auto mt-2 min-h-[78px] max-w-[240px] text-[18px] leading-[1.1] font-extrabold text-[#171717]">
+                        <h4 className="mx-auto mt-2 min-h-[64px] max-w-[240px] text-[18px] leading-[1.1] font-extrabold text-[#171717] sm:min-h-[78px]">
                           {selectedProduct.cardTitle}
                         </h4>
                       </div>
                     </div>
 
                     <div className="rounded-[28px] border border-[#e8ddd2] bg-white/90 p-5 shadow-[0_16px_38px_rgba(23,23,23,0.05)] sm:p-6">
-                      <div className="flex flex-wrap items-start justify-between gap-3">
+                      <div className="flex flex-col items-stretch gap-3 sm:flex-row sm:flex-wrap sm:items-start sm:justify-between">
                         <div>
                           <p className="text-xs font-semibold uppercase tracking-[0.22em] text-[#8f5c3d]">
                             Detalhes
@@ -335,7 +335,7 @@ export default function AdminProductCatalogModal({
                         </div>
                         <Link
                           href={`/produtos/${selectedProduct.slug}`}
-                          className="inline-flex rounded-full border border-[#d8c9bb] bg-white px-4 py-2 text-xs font-semibold uppercase tracking-[0.14em] text-[#17345c] transition-colors hover:border-[#17345c]"
+                          className="inline-flex w-full items-center justify-center rounded-full border border-[#d8c9bb] bg-white px-4 py-2 text-xs font-semibold uppercase tracking-[0.14em] text-[#17345c] transition-colors hover:border-[#17345c] sm:w-auto"
                         >
                           Ver produto
                         </Link>
@@ -432,7 +432,7 @@ export default function AdminProductCatalogModal({
                         </p>
                       </div>
 
-                      <div className="mt-5 flex flex-wrap items-center justify-between gap-4">
+                      <div className="mt-5 flex flex-col gap-4 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
                         <div className="flex flex-wrap gap-2">
                           {selectedProduct.sizes.map((size) => (
                             <span
@@ -444,10 +444,10 @@ export default function AdminProductCatalogModal({
                           ))}
                         </div>
 
-                        <div className="flex flex-wrap items-center gap-3">
+                        <div className="flex w-full flex-col gap-3 sm:w-auto sm:flex-row sm:flex-wrap sm:items-center">
                           <Link
                             href={`/painel/produtos/${selectedProduct.id}`}
-                            className="inline-flex items-center justify-center rounded-2xl border border-[#d8c9bb] bg-white px-5 py-3 text-xs font-semibold uppercase tracking-[0.16em] text-[#17345c] transition-colors hover:border-[#17345c]"
+                            className="inline-flex w-full items-center justify-center rounded-2xl border border-[#d8c9bb] bg-white px-5 py-3 text-xs font-semibold uppercase tracking-[0.16em] text-[#17345c] transition-colors hover:border-[#17345c] sm:w-auto"
                           >
                             Editar produto
                           </Link>
@@ -460,7 +460,7 @@ export default function AdminProductCatalogModal({
                             <SubmitButton
                               pendingLabel="Removendo..."
                               confirmMessage={`Remover "${selectedProduct.name}" da loja e do painel?`}
-                              className="inline-flex items-center justify-center rounded-2xl border border-[#e1b8b8] bg-white px-5 py-3 text-xs font-semibold uppercase tracking-[0.16em] text-[#a33d3d] transition-colors hover:border-[#a33d3d] hover:bg-[#fff5f5]"
+                              className="inline-flex w-full items-center justify-center rounded-2xl border border-[#e1b8b8] bg-white px-5 py-3 text-xs font-semibold uppercase tracking-[0.16em] text-[#a33d3d] transition-colors hover:border-[#a33d3d] hover:bg-[#fff5f5] sm:w-auto"
                             >
                               Excluir produto
                             </SubmitButton>
