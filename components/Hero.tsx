@@ -5,7 +5,7 @@ export default function Hero() {
     <section>
       <div className="overflow-hidden">
         <Image
-          src="/hero/hero1.webp"
+          src="/hero/main.jpg"
           alt="Banner principal da Country"
           width={1920}
           height={622}
