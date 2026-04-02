@@ -25,6 +25,11 @@ export type CategorySlug =
   | "pijamas"
   | "vestidos";
 
+export type ProductColor = {
+  name: string;
+  swatch: string;
+};
+
 export type Product = {
   slug: string;
   brand: string;
@@ -38,10 +43,8 @@ export type Product = {
   pixLabel: string;
   installments: string;
   sizes: string[];
-  color: {
-    name: string;
-    swatch: string;
-  };
+  color: ProductColor;
+  colors: ProductColor[];
   categoryTrail: string[];
   description: string;
   navGroups: CategorySlug[];
@@ -91,9 +94,8 @@ export type ProductFormInput = {
   pixLabel?: string;
   installments?: string;
   sizes: string[];
-  colorName: string;
-  colorSwatch: string;
-  primaryGroup: CategorySlug;
+  colors: ProductColor[];
+  primaryGroups: CategorySlug[];
   categorySlug: CategorySlug;
   description: string;
   homeSections?: HomeSection[];
@@ -231,6 +233,7 @@ export const defaultProducts: Product[] = [
     installments: "Parcelamento em ate 12x com juros",
     sizes: ["34", "36", "38", "40"],
     color: { name: "Jeans Azul", swatch: "#4f73a6" },
+    colors: [{ name: "Jeans Azul", swatch: "#4f73a6" }],
     categoryTrail: ["Inicio", "Feminino", "Calcas", "Tex Team"],
     description:
       "Calca country com caimento marcante e leitura comercial para compor vitrines femininas com mais presenca.",
@@ -251,6 +254,7 @@ export const defaultProducts: Product[] = [
     installments: "Parcelamento em ate 12x com juros",
     sizes: ["34", "36", "38", "40"],
     color: { name: "Preta", swatch: "#262626" },
+    colors: [{ name: "Preta", swatch: "#262626" }],
     categoryTrail: ["Inicio", "Feminino", "Calcas", "Tex Team"],
     description:
       "Modelo com leitura mais intensa e acabamento bordado para uma apresentacao premium do catalogo.",
@@ -271,6 +275,7 @@ export const defaultProducts: Product[] = [
     installments: "Parcelamento em ate 12x com juros",
     sizes: ["P", "M", "G", "GG"],
     color: { name: "Petroleo", swatch: "#163d52" },
+    colors: [{ name: "Petroleo", swatch: "#163d52" }],
     categoryTrail: ["Inicio", "Masculino", "Blusas", "Os Vaqueiros"],
     description:
       "Camisa de visual western para reforcar a categoria masculina com uma peca de forte apelo comercial.",
@@ -291,6 +296,7 @@ export const defaultProducts: Product[] = [
     installments: "Parcelamento em ate 12x com juros",
     sizes: ["P", "M", "G", "GG"],
     color: { name: "Vinho", swatch: "#7b2333" },
+    colors: [{ name: "Vinho", swatch: "#7b2333" }],
     categoryTrail: ["Inicio", "Feminino", "Blusas", "Radade"],
     description:
       "Camisa feminina com bordado e leitura elegante para uma vitrine mais rica e coerente com o estilo da loja.",
@@ -311,6 +317,7 @@ export const defaultProducts: Product[] = [
     installments: "Parcelamento em ate 12x com juros",
     sizes: ["Unico"],
     color: { name: "Marinho", swatch: "#16365f" },
+    colors: [{ name: "Marinho", swatch: "#16365f" }],
     categoryTrail: ["Inicio", "Acessorios", "Bones", "Country City"],
     description:
       "Bone com visual casual country para ampliar o mix de acessorios com um item de giro rapido.",
@@ -331,6 +338,7 @@ export const defaultProducts: Product[] = [
     installments: "Parcelamento em ate 12x com juros",
     sizes: ["56", "58", "60"],
     color: { name: "Caqui", swatch: "#b7976a" },
+    colors: [{ name: "Caqui", swatch: "#b7976a" }],
     categoryTrail: ["Inicio", "Acessorios", "Chapeus", "8 Segundos"],
     description:
       "Chapeu de presenca forte para enriquecer a categoria de acessorios com uma linguagem country bem clara.",
@@ -351,6 +359,7 @@ export const defaultProducts: Product[] = [
     installments: "Parcelamento em ate 12x com juros",
     sizes: ["34", "35", "36", "37", "38"],
     color: { name: "Caramelo", swatch: "#8b5a34" },
+    colors: [{ name: "Caramelo", swatch: "#8b5a34" }],
     categoryTrail: ["Inicio", "Feminino", "Acessorios", "Goyazes"],
     description:
       "Modelo de forte impacto visual para o mix feminino, com linguagem western e valor percebido mais alto.",
@@ -371,6 +380,7 @@ export const defaultProducts: Product[] = [
     installments: "Parcelamento em ate 12x com juros",
     sizes: ["P", "M", "G", "GG"],
     color: { name: "Tabaco", swatch: "#6b4428" },
+    colors: [{ name: "Tabaco", swatch: "#6b4428" }],
     categoryTrail: ["Inicio", "Masculino", "Casacos", "Power Country"],
     description:
       "Casaco com visual robusto para reforcar o mix masculino e ampliar as opcoes de meia-estacao da loja.",
@@ -391,6 +401,7 @@ export const defaultProducts: Product[] = [
     installments: "Parcelamento em ate 12x com juros",
     sizes: ["90", "95", "100", "105"],
     color: { name: "Cafe", swatch: "#6a4628" },
+    colors: [{ name: "Cafe", swatch: "#6a4628" }],
     categoryTrail: ["Inicio", "Acessorios", "Cintos", "Power Country"],
     description:
       "Cinto com fivela de destaque para elevar o ticket medio dos looks e completar a categoria de acessorios.",
@@ -411,6 +422,7 @@ export const defaultProducts: Product[] = [
     installments: "Parcelamento em ate 12x com juros",
     sizes: ["36", "38", "40", "42"],
     color: { name: "Jeans Medio", swatch: "#5b7694" },
+    colors: [{ name: "Jeans Medio", swatch: "#5b7694" }],
     categoryTrail: ["Inicio", "Feminino", "Shorts", "Texas Farm"],
     description:
       "Short jeans com pegada country e leitura casual para reforcar o mix de pecas leves da loja.",
@@ -431,6 +443,7 @@ export const defaultProducts: Product[] = [
     installments: "Parcelamento em ate 12x com juros",
     sizes: ["P", "M", "G"],
     color: { name: "Rosa", swatch: "#e981ab" },
+    colors: [{ name: "Rosa", swatch: "#e981ab" }],
     categoryTrail: ["Inicio", "Feminino", "Pijamas", "Just"],
     description:
       "Pijama com visual leve para completar o mix da loja com uma categoria complementar e comercial.",
@@ -451,6 +464,7 @@ export const defaultProducts: Product[] = [
     installments: "Parcelamento em ate 12x com juros",
     sizes: ["P", "M", "G"],
     color: { name: "Terracota", swatch: "#b65e4c" },
+    colors: [{ name: "Terracota", swatch: "#b65e4c" }],
     categoryTrail: ["Inicio", "Feminino", "Vestidos", "Radade"],
     description:
       "Vestido com leitura feminina e country para deixar a categoria mais completa e visualmente equilibrada.",
@@ -471,6 +485,7 @@ export const defaultProducts: Product[] = [
     installments: "Parcelamento em ate 12x com juros",
     sizes: ["4", "6", "8", "10"],
     color: { name: "Rosa", swatch: "#ef7aa8" },
+    colors: [{ name: "Rosa", swatch: "#ef7aa8" }],
     categoryTrail: ["Inicio", "Infantil", "Blusas", "Just"],
     description:
       "Peca infantil com visual country e boa leitura comercial para fortalecer a categoria infantil.",
@@ -522,6 +537,26 @@ function sanitizeSwatch(value: string) {
   return /^#[0-9a-fA-F]{6}$/.test(normalized) ? normalized : "#171717";
 }
 
+function normalizeColorEntries(colors: ProductColor[]) {
+  const uniqueColors = new Map<string, ProductColor>();
+
+  for (const color of colors) {
+    const name = normalizeText(color.name);
+
+    if (!name) {
+      continue;
+    }
+
+    const swatch = sanitizeSwatch(color.swatch);
+    uniqueColors.set(`${name.toLowerCase()}::${swatch.toLowerCase()}`, {
+      name,
+      swatch,
+    });
+  }
+
+  return Array.from(uniqueColors.values());
+}
+
 function getCategoryLabel(slug: CategorySlug) {
   return (
     categoryDefinitions.find((category) => category.slug === slug)?.label ?? slug
@@ -530,6 +565,28 @@ function getCategoryLabel(slug: CategorySlug) {
 
 function parseJsonArray(value: unknown): string[] {
   return Array.isArray(value) ? value.filter((item): item is string => typeof item === "string") : [];
+}
+
+function parseJsonColorArray(value: unknown): ProductColor[] {
+  if (!Array.isArray(value)) {
+    return [];
+  }
+
+  return normalizeColorEntries(
+    value.flatMap((item) => {
+      if (!item || typeof item !== "object") {
+        return [];
+      }
+
+      const candidate = item as Record<string, unknown>;
+      return [
+        {
+          name: String(candidate.name ?? ""),
+          swatch: String(candidate.swatch ?? ""),
+        },
+      ];
+    })
+  );
 }
 
 function getNormalizedGallery(image: string, gallery: string[]) {
@@ -542,6 +599,18 @@ function getNormalizedGallery(image: string, gallery: string[]) {
 
 function rowToProduct(row: Record<string, unknown>): Product {
   const image = String(row.image);
+  const fallbackColors = normalizeColorEntries([
+    {
+      name: String(row.color_name ?? ""),
+      swatch: String(row.color_swatch ?? ""),
+    },
+  ]);
+  const colors = parseJsonColorArray(row.colors);
+  const resolvedColors = colors.length > 0 ? colors : fallbackColors;
+  const primaryColor = resolvedColors[0] ?? {
+    name: "Sem cor",
+    swatch: "#171717",
+  };
 
   return {
     slug: String(row.slug),
@@ -556,10 +625,8 @@ function rowToProduct(row: Record<string, unknown>): Product {
     pixLabel: String(row.pix_label),
     installments: String(row.installments),
     sizes: parseJsonArray(row.sizes),
-    color: {
-      name: String(row.color_name),
-      swatch: String(row.color_swatch),
-    },
+    color: primaryColor,
+    colors: resolvedColors,
     categoryTrail: parseJsonArray(row.category_trail),
     description: String(row.description),
     navGroups: parseJsonArray(row.nav_groups) as CategorySlug[],
@@ -695,6 +762,7 @@ async function ensureDatabaseReady() {
           sizes JSONB NOT NULL DEFAULT '[]'::jsonb,
           color_name TEXT NOT NULL,
           color_swatch TEXT NOT NULL,
+          colors JSONB NOT NULL DEFAULT '[]'::jsonb,
           category_trail JSONB NOT NULL DEFAULT '[]'::jsonb,
           description TEXT NOT NULL,
           nav_groups JSONB NOT NULL DEFAULT '[]'::jsonb,
@@ -708,6 +776,22 @@ async function ensureDatabaseReady() {
           created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
           updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
         )
+      `);
+
+      await pool.query(`
+        ALTER TABLE products
+        ADD COLUMN IF NOT EXISTS colors JSONB NOT NULL DEFAULT '[]'::jsonb
+      `);
+
+      await pool.query(`
+        UPDATE products
+        SET colors = jsonb_build_array(
+          jsonb_build_object(
+            'name', color_name,
+            'swatch', color_swatch
+          )
+        )
+        WHERE colors = '[]'::jsonb
       `);
 
       await pool.query(
@@ -1029,13 +1113,18 @@ export async function createProduct(input: ProductFormInput) {
     throw new Error("Informe pelo menos um tamanho.");
   }
 
-  const primaryGroup = input.primaryGroup;
+  const primaryGroups = uniqueValues(input.primaryGroups);
   const categorySlug = input.categorySlug;
+  const colors = normalizeColorEntries(input.colors);
 
   if (
-    !panelPrimaryCategoryOptions.some((category) => category.slug === primaryGroup)
+    primaryGroups.length === 0 ||
+    primaryGroups.some(
+      (group) =>
+        !panelPrimaryCategoryOptions.some((category) => category.slug === group)
+    )
   ) {
-    throw new Error("Categoria principal invalida.");
+    throw new Error("Selecione pelo menos uma categoria principal valida.");
   }
 
   if (
@@ -1044,8 +1133,12 @@ export async function createProduct(input: ProductFormInput) {
     throw new Error("Categoria do produto invalida.");
   }
 
+  if (colors.length === 0) {
+    throw new Error("Informe pelo menos uma cor.");
+  }
+
   const productCategoryLabel = getCategoryLabel(categorySlug);
-  const primaryCategoryLabel = getCategoryLabel(primaryGroup);
+  const primaryCategoryLabels = primaryGroups.map(getCategoryLabel);
 
   return queryProducts(async (client) => {
     const existing = await client.query("SELECT id FROM products WHERE slug = $1 LIMIT 1", [slug]);
@@ -1060,10 +1153,14 @@ export async function createProduct(input: ProductFormInput) {
     const pixPrice = normalizeText(input.pixPrice || calculatePixPrice(price));
     const pixLabel = defaultPixLabel;
     const installments = defaultInstallmentsLabel;
-    const colorName = normalizeText(input.colorName);
-    const colorSwatch = sanitizeSwatch(input.colorSwatch);
-    const navGroups = uniqueValues([primaryGroup, categorySlug]);
-    const categoryTrail = ["Inicio", primaryCategoryLabel, productCategoryLabel, brand];
+    const primaryColor = colors[0];
+    const navGroups = uniqueValues([...primaryGroups, categorySlug]);
+    const categoryTrail = [
+      "Inicio",
+      ...primaryCategoryLabels,
+      productCategoryLabel,
+      brand,
+    ];
     const finalGallery = getNormalizedGallery(image, gallery);
 
     if (!price || !pixPrice) {
@@ -1087,6 +1184,7 @@ export async function createProduct(input: ProductFormInput) {
           sizes,
           color_name,
           color_swatch,
+          colors,
           category_trail,
           description,
           nav_groups,
@@ -1102,7 +1200,7 @@ export async function createProduct(input: ProductFormInput) {
         )
         VALUES (
           $1, $2, $3, $4, $5, $6::jsonb, $7, $8, $9, $10, $11, $12::jsonb,
-          $13, $14, $15::jsonb, $16, $17::jsonb, $18, $19, $20, $21, $22, $23, $24, NOW(), NOW()
+          $13, $14, $15::jsonb, $16::jsonb, $17, $18::jsonb, $19, $20, $21, $22, $23, $24, $25, NOW(), NOW()
         )
         RETURNING *
       `,
@@ -1119,8 +1217,9 @@ export async function createProduct(input: ProductFormInput) {
         pixLabel,
         installments,
         JSON.stringify(sizes),
-        colorName,
-        colorSwatch,
+        primaryColor.name,
+        primaryColor.swatch,
+        JSON.stringify(colors),
         JSON.stringify(categoryTrail),
         description,
         JSON.stringify(navGroups),
@@ -1162,13 +1261,18 @@ export async function updateProduct(productId: number, input: ProductFormInput) 
     throw new Error("Informe pelo menos um tamanho.");
   }
 
-  const primaryGroup = input.primaryGroup;
+  const primaryGroups = uniqueValues(input.primaryGroups);
   const categorySlug = input.categorySlug;
+  const colors = normalizeColorEntries(input.colors);
 
   if (
-    !panelPrimaryCategoryOptions.some((category) => category.slug === primaryGroup)
+    primaryGroups.length === 0 ||
+    primaryGroups.some(
+      (group) =>
+        !panelPrimaryCategoryOptions.some((category) => category.slug === group)
+    )
   ) {
-    throw new Error("Categoria principal invalida.");
+    throw new Error("Selecione pelo menos uma categoria principal valida.");
   }
 
   if (
@@ -1177,8 +1281,12 @@ export async function updateProduct(productId: number, input: ProductFormInput) 
     throw new Error("Categoria do produto invalida.");
   }
 
+  if (colors.length === 0) {
+    throw new Error("Informe pelo menos uma cor.");
+  }
+
   const productCategoryLabel = getCategoryLabel(categorySlug);
-  const primaryCategoryLabel = getCategoryLabel(primaryGroup);
+  const primaryCategoryLabels = primaryGroups.map(getCategoryLabel);
 
   return queryProducts(async (client) => {
     const current = await client.query("SELECT id FROM products WHERE id = $1 LIMIT 1", [
@@ -1204,10 +1312,14 @@ export async function updateProduct(productId: number, input: ProductFormInput) 
     const pixPrice = normalizeText(input.pixPrice || calculatePixPrice(price));
     const pixLabel = defaultPixLabel;
     const installments = defaultInstallmentsLabel;
-    const colorName = normalizeText(input.colorName);
-    const colorSwatch = sanitizeSwatch(input.colorSwatch);
-    const navGroups = uniqueValues([primaryGroup, categorySlug]);
-    const categoryTrail = ["Inicio", primaryCategoryLabel, productCategoryLabel, brand];
+    const primaryColor = colors[0];
+    const navGroups = uniqueValues([...primaryGroups, categorySlug]);
+    const categoryTrail = [
+      "Inicio",
+      ...primaryCategoryLabels,
+      productCategoryLabel,
+      brand,
+    ];
     const finalGallery = getNormalizedGallery(image, gallery);
 
     if (!price || !pixPrice) {
@@ -1231,23 +1343,24 @@ export async function updateProduct(productId: number, input: ProductFormInput) 
             sizes = $13::jsonb,
             color_name = $14,
             color_swatch = $15,
-            category_trail = $16::jsonb,
-            description = $17,
-            nav_groups = $18::jsonb,
-            category = $19,
-            show_in_promocoes = $20,
+            colors = $16::jsonb,
+            category_trail = $17::jsonb,
+            description = $18,
+            nav_groups = $19::jsonb,
+            category = $20,
+            show_in_promocoes = $21,
             featured_promocoes_at = CASE
-              WHEN $20 THEN COALESCE(featured_promocoes_at, NOW())
+              WHEN $21 THEN COALESCE(featured_promocoes_at, NOW())
               ELSE NULL
             END,
-            show_in_chapeus = $21,
+            show_in_chapeus = $22,
             featured_chapeus_at = CASE
-              WHEN $21 THEN COALESCE(featured_chapeus_at, NOW())
+              WHEN $22 THEN COALESCE(featured_chapeus_at, NOW())
               ELSE NULL
             END,
-            show_in_infantil = $22,
+            show_in_infantil = $23,
             featured_infantil_at = CASE
-              WHEN $22 THEN COALESCE(featured_infantil_at, NOW())
+              WHEN $23 THEN COALESCE(featured_infantil_at, NOW())
               ELSE NULL
             END,
             updated_at = NOW()
@@ -1268,8 +1381,9 @@ export async function updateProduct(productId: number, input: ProductFormInput) 
         pixLabel,
         installments,
         JSON.stringify(sizes),
-        colorName,
-        colorSwatch,
+        primaryColor.name,
+        primaryColor.swatch,
+        JSON.stringify(colors),
         JSON.stringify(categoryTrail),
         description,
         JSON.stringify(navGroups),

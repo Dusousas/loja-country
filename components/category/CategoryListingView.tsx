@@ -72,10 +72,9 @@ export default function CategoryListingView({
     () =>
       Array.from(
         new Map(
-          products.map((product) => [
-            product.color.name,
-            { name: product.color.name, swatch: product.color.swatch },
-          ])
+          products.flatMap((product) =>
+            product.colors.map((color) => [color.name, color] as const)
+          )
         ).values()
       ),
     [products]
@@ -91,7 +90,7 @@ export default function CategoryListingView({
         selectedCategories.includes(product.category);
       const matchColor =
         selectedColors.length === 0 ||
-        selectedColors.includes(product.color.name);
+        product.colors.some((color) => selectedColors.includes(color.name));
 
       return matchBrand && matchCategory && matchColor;
     });

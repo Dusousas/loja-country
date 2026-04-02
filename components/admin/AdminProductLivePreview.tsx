@@ -10,6 +10,7 @@ import {
   defaultInstallmentsLabel,
   defaultPixLabel,
 } from "@/lib/product-pricing";
+import type { ProductColor } from "@/lib/products";
 
 type HomeSection = "promocoes" | "chapeus" | "infantil";
 
@@ -30,13 +31,12 @@ type PreviewState = {
   brand: string;
   name: string;
   cardTitle: string;
-  primaryGroup: string;
+  primaryGroups: string[];
   category: string;
   imageUrl: string;
   price: string;
   pixPrice: string;
-  colorName: string;
-  colorSwatch: string;
+  colors: ProductColor[];
   sizes: string[];
   description: string;
   homeSections: HomeSection[];
@@ -48,13 +48,12 @@ const initialState: PreviewState = {
   brand: "Sua marca",
   name: "Nome do produto",
   cardTitle: "Nome do produto",
-  primaryGroup: "Masculino",
+  primaryGroups: ["Masculino"],
   category: "Blusas",
   imageUrl: defaultImage,
   price: "R$189,90",
   pixPrice: "R$180,41",
-  colorName: "Marinho",
-  colorSwatch: "#17345c",
+  colors: [{ name: "Marinho", swatch: "#17345c" }],
   sizes: ["P", "M", "G"],
   description:
     "A descricao digitada no formulario aparece aqui para validar o visual antes de salvar.",
@@ -75,6 +74,46 @@ function getOptionLabel(options: CategoryOption[], slug: string, fallback: strin
 function getValidSwatch(value: FormDataEntryValue | null) {
   const swatch = String(value ?? "").trim();
   return /^#[0-9a-fA-F]{6}$/.test(swatch) ? swatch : "#17345c";
+}
+
+function getOptionLabels(
+  options: CategoryOption[],
+  values: FormDataEntryValue[],
+  fallback: string[]
+) {
+  const labels = values
+    .filter((value): value is string => typeof value === "string")
+    .map((value) => value.trim())
+    .filter(Boolean)
+    .map((value) => getOptionLabel(options, value, ""))
+    .filter(Boolean);
+
+  return labels.length > 0 ? labels : fallback;
+}
+
+function parseColors(formData: FormData) {
+  const names = formData
+    .getAll("colorNames")
+    .filter((value): value is string => typeof value === "string")
+    .map((value) => value.trim());
+  const swatches = formData
+    .getAll("colorSwatches")
+    .filter((value): value is string => typeof value === "string");
+
+  const colors = names.flatMap((name, index) => {
+    if (!name) {
+      return [];
+    }
+
+    return [
+      {
+        name,
+        swatch: getValidSwatch(swatches[index] ?? null),
+      },
+    ];
+  });
+
+  return colors.length > 0 ? colors : initialState.colors;
 }
 
 export default function AdminProductLivePreview({
@@ -124,10 +163,10 @@ export default function AdminProductLivePreview({
         name: name || initialState.name,
         cardTitle:
           String(formData.get("cardTitle") ?? "").trim() || name || initialState.cardTitle,
-        primaryGroup: getOptionLabel(
+        primaryGroups: getOptionLabels(
           primaryOptions,
-          String(formData.get("primaryGroup") ?? "masculino"),
-          initialState.primaryGroup
+          formData.getAll("primaryGroups"),
+          initialState.primaryGroups
         ),
         category: getOptionLabel(
           productOptions,
@@ -138,9 +177,7 @@ export default function AdminProductLivePreview({
         price: String(formData.get("price") ?? "").trim() || initialState.price,
         pixPrice:
           calculatePixPrice(String(formData.get("price") ?? "")) || initialState.pixPrice,
-        colorName:
-          String(formData.get("colorName") ?? "").trim() || initialState.colorName,
-        colorSwatch: getValidSwatch(formData.get("colorSwatch")),
+        colors: parseColors(formData),
         sizes: sizes.length > 0 ? sizes.slice(0, 4) : initialState.sizes,
         description:
           String(formData.get("description") ?? "").trim() || initialState.description,
@@ -160,7 +197,7 @@ export default function AdminProductLivePreview({
         URL.revokeObjectURL(objectUrlRef.current);
       }
     };
-  }, [formId, primaryOptions, productOptions]);
+  }, [fallbackImageUrl, formId, primaryOptions, productOptions]);
 
   return (
     <aside className="rounded-[28px] border border-[#e8ddd2] bg-[linear-gradient(180deg,#fffdf9_0%,#f6efe7_100%)] p-5 shadow-[0_18px_38px_rgba(23,23,23,0.06)] xl:sticky xl:top-6 xl:h-fit">
@@ -232,9 +269,14 @@ export default function AdminProductLivePreview({
 
       <div className="mt-5 rounded-[22px] border border-[#eadfd5] bg-white/85 p-4">
         <div className="flex flex-wrap gap-2">
-          <span className="rounded-full bg-[#f5efe8] px-3 py-1 text-xs font-semibold uppercase tracking-[0.14em] text-[#8f5c3d]">
-            {preview.primaryGroup}
-          </span>
+          {preview.primaryGroups.map((group) => (
+            <span
+              key={group}
+              className="rounded-full bg-[#f5efe8] px-3 py-1 text-xs font-semibold uppercase tracking-[0.14em] text-[#8f5c3d]"
+            >
+              {group}
+            </span>
+          ))}
           <span className="rounded-full bg-[#f1f5f9] px-3 py-1 text-xs font-semibold uppercase tracking-[0.14em] text-[#17345c]">
             {preview.category}
           </span>
@@ -249,12 +291,19 @@ export default function AdminProductLivePreview({
         </div>
 
         <div className="mt-4 flex items-center gap-3">
-          <span
-            className="block size-7 rounded-full border border-black/10"
-            style={{ backgroundColor: preview.colorSwatch }}
-          />
+          <div className="flex flex-wrap items-center gap-2">
+            {preview.colors.map((color) => (
+              <span
+                key={`${color.name}-${color.swatch}`}
+                className="block size-7 rounded-full border border-black/10"
+                style={{ backgroundColor: color.swatch }}
+              />
+            ))}
+          </div>
           <div>
-            <p className="text-sm font-semibold text-[#171717]">{preview.colorName}</p>
+            <p className="text-sm font-semibold text-[#171717]">
+              {preview.colors.map((color) => color.name).join(", ")}
+            </p>
             <p className="text-xs text-[#68788a]">Valor cheio do produto</p>
           </div>
         </div>

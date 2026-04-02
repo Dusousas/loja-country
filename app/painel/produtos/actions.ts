@@ -37,6 +37,38 @@ function getHomeSections(formData: FormData) {
     );
 }
 
+function getPrimaryGroups(formData: FormData) {
+  return formData
+    .getAll("primaryGroups")
+    .filter((value): value is string => typeof value === "string")
+    .map((value) => value.trim())
+    .filter(Boolean) as ProductFormInput["primaryGroups"];
+}
+
+function getColors(formData: FormData) {
+  const names = formData
+    .getAll("colorNames")
+    .filter((value): value is string => typeof value === "string")
+    .map((value) => value.trim());
+  const swatches = formData
+    .getAll("colorSwatches")
+    .filter((value): value is string => typeof value === "string")
+    .map((value) => value.trim());
+
+  return names.flatMap((name, index) => {
+    if (!name) {
+      return [];
+    }
+
+    return [
+      {
+        name,
+        swatch: swatches[index] ?? "",
+      },
+    ];
+  });
+}
+
 function getUploadedFiles(formData: FormData, key: string) {
   return formData
     .getAll(key)
@@ -125,9 +157,8 @@ export async function createProductFromPanel(formData: FormData) {
       gallery,
       price: getString(formData, "price"),
       sizes: getList(formData, "sizes"),
-      colorName: getString(formData, "colorName"),
-      colorSwatch: getString(formData, "colorSwatch"),
-      primaryGroup: getString(formData, "primaryGroup") as ProductFormInput["primaryGroup"],
+      colors: getColors(formData),
+      primaryGroups: getPrimaryGroups(formData),
       categorySlug: getString(formData, "categorySlug") as ProductFormInput["categorySlug"],
       description: getString(formData, "description"),
       homeSections: getHomeSections(formData),
@@ -310,9 +341,8 @@ export async function updateProductFromPanel(formData: FormData) {
       gallery: nextAdditionalGallery,
       price: getString(formData, "price"),
       sizes: getList(formData, "sizes"),
-      colorName: getString(formData, "colorName"),
-      colorSwatch: getString(formData, "colorSwatch"),
-      primaryGroup: getString(formData, "primaryGroup") as ProductFormInput["primaryGroup"],
+      colors: getColors(formData),
+      primaryGroups: getPrimaryGroups(formData),
       categorySlug: getString(formData, "categorySlug") as ProductFormInput["categorySlug"],
       description: getString(formData, "description"),
       homeSections: getHomeSections(formData),

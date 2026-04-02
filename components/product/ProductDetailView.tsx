@@ -20,14 +20,17 @@ export default function ProductDetailView({
 }: ProductDetailViewProps) {
   const [activeImage, setActiveImage] = useState(product.gallery[0]);
   const [selectedSize, setSelectedSize] = useState(product.sizes[0]);
+  const [selectedColor, setSelectedColor] = useState(
+    product.colors[0] ?? product.color
+  );
 
   const whatsappHref = useMemo(() => {
     const message = encodeURIComponent(
-      `Oi! Quero comprar ${product.name}. Cor: ${product.color.name}. Tamanho: ${selectedSize}.`
+      `Oi! Quero comprar ${product.name}. Cor: ${selectedColor.name}. Tamanho: ${selectedSize}.`
     );
 
     return `https://wa.me/${STORE_WHATSAPP}?text=${message}`;
-  }, [product.color.name, product.name, selectedSize]);
+  }, [product.name, selectedColor.name, selectedSize]);
 
   return (
     <section className="py-8 sm:py-10">
@@ -154,20 +157,34 @@ export default function ProductDetailView({
                 <p className="text-[14px] text-[#46566f]">
                   Cor:{" "}
                   <span className="font-semibold text-[#171717]">
-                    {product.color.name}
+                    {selectedColor.name}
                   </span>
                 </p>
-                <div className="mt-2.5 flex items-center gap-3">
-                  <button
-                    type="button"
-                    aria-label={`Cor ${product.color.name}`}
-                    className="rounded-full border-2 border-[#171717] bg-white p-1"
-                  >
-                    <span
-                      className="block size-7 rounded-full border border-black/10"
-                      style={{ backgroundColor: product.color.swatch }}
-                    />
-                  </button>
+                <div className="mt-2.5 flex flex-wrap items-center gap-3">
+                  {product.colors.map((color) => {
+                    const isSelected =
+                      selectedColor.name === color.name &&
+                      selectedColor.swatch === color.swatch;
+
+                    return (
+                      <button
+                        key={`${color.name}-${color.swatch}`}
+                        type="button"
+                        onClick={() => setSelectedColor(color)}
+                        aria-label={`Cor ${color.name}`}
+                        className={`rounded-full bg-white p-1 transition-colors ${
+                          isSelected
+                            ? "border-2 border-[#171717]"
+                            : "border-2 border-transparent hover:border-[#8f5c3d]"
+                        }`}
+                      >
+                        <span
+                          className="block size-7 rounded-full border border-black/10"
+                          style={{ backgroundColor: color.swatch }}
+                        />
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
 

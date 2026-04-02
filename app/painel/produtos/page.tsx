@@ -307,18 +307,26 @@ export default async function ProductAdminPage({
                       <span className="mb-2 block text-sm font-semibold text-[#17345c]">
                         Categoria principal
                       </span>
-                      <select
-                        name="primaryGroup"
-                        required
-                        defaultValue="masculino"
-                        className="w-full rounded-2xl border border-[#d7dfe6] bg-white px-4 py-3 text-[15px] text-[#171717] outline-none transition-colors focus:border-[#17345c]"
-                      >
+                      <div className="grid gap-3 rounded-2xl border border-[#d7dfe6] bg-white p-4">
                         {panelPrimaryCategoryOptions.map((category) => (
-                          <option key={category.slug} value={category.slug}>
-                            {category.label}
-                          </option>
+                          <label
+                            key={category.slug}
+                            className="flex items-center gap-3 rounded-2xl border border-[#ece3da] bg-[#fcfbfa] px-4 py-3 text-sm font-medium text-[#171717]"
+                          >
+                            <input
+                              type="checkbox"
+                              name="primaryGroups"
+                              value={category.slug}
+                              defaultChecked={category.slug === "masculino"}
+                              className="size-4 accent-[#17345c]"
+                            />
+                            <span>{category.label}</span>
+                          </label>
                         ))}
-                      </select>
+                      </div>
+                      <p className="mt-2 text-[12px] leading-5 text-[#68788a]">
+                        Marque uma ou mais categorias, como Masculino e Feminino.
+                      </p>
                     </label>
 
                     <label className="block">

@@ -36,11 +36,12 @@ function getProductCategorySlug(label: string) {
   );
 }
 
-function getPrimaryGroupSlug(navGroups: string[]) {
-  return (
-    panelPrimaryCategoryOptions.find((category) => navGroups.includes(category.slug))
-      ?.slug ?? "masculino"
-  );
+function getPrimaryGroupSlugs(navGroups: string[]) {
+  const selectedGroups = panelPrimaryCategoryOptions
+    .filter((category) => navGroups.includes(category.slug))
+    .map((category) => category.slug);
+
+  return selectedGroups.length > 0 ? selectedGroups : ["masculino"];
 }
 
 function getAdditionalGalleryImages(image: string, gallery: string[]) {
@@ -68,7 +69,7 @@ export default async function EditProductPage({
 
   const routeSearchParams = searchParams ? await searchParams : {};
   const additionalGallery = getAdditionalGalleryImages(product.image, product.gallery);
-  const primaryGroupSlug = getPrimaryGroupSlug(product.navGroups);
+  const primaryGroupSlugs = getPrimaryGroupSlugs(product.navGroups);
   const productCategorySlug = getProductCategorySlug(product.category);
 
   return (
@@ -198,18 +199,26 @@ export default async function EditProductPage({
                     <span className="mb-2 block text-sm font-semibold text-[#17345c]">
                       Categoria principal
                     </span>
-                    <select
-                      name="primaryGroup"
-                      required
-                      defaultValue={primaryGroupSlug}
-                      className="w-full rounded-2xl border border-[#d7dfe6] bg-white px-4 py-3 text-[15px] text-[#171717] outline-none transition-colors focus:border-[#17345c]"
-                    >
+                    <div className="grid gap-3 rounded-2xl border border-[#d7dfe6] bg-white p-4">
                       {panelPrimaryCategoryOptions.map((category) => (
-                        <option key={category.slug} value={category.slug}>
-                          {category.label}
-                        </option>
+                        <label
+                          key={category.slug}
+                          className="flex items-center gap-3 rounded-2xl border border-[#ece3da] bg-[#fcfbfa] px-4 py-3 text-sm font-medium text-[#171717]"
+                        >
+                          <input
+                            type="checkbox"
+                            name="primaryGroups"
+                            value={category.slug}
+                            defaultChecked={primaryGroupSlugs.includes(category.slug)}
+                            className="size-4 accent-[#17345c]"
+                          />
+                          <span>{category.label}</span>
+                        </label>
                       ))}
-                    </select>
+                    </div>
+                    <p className="mt-2 text-[12px] leading-5 text-[#68788a]">
+                      Marque todas as categorias principais em que o produto deve aparecer.
+                    </p>
                   </label>
 
                   <label className="block">
@@ -340,10 +349,7 @@ export default async function EditProductPage({
                   <AdminPricingDefaults formId="product-edit-form" />
                 </div>
 
-                <ColorFields
-                  defaultColorName={product.color.name}
-                  defaultColorSwatch={product.color.swatch}
-                />
+                <ColorFields defaultColors={product.colors} />
 
                 <label className="mt-5 block">
                   <span className="mb-2 block text-sm font-semibold text-[#17345c]">

@@ -25,6 +25,26 @@ function getSelectLabel(form: HTMLFormElement, name: string) {
   return field.options[field.selectedIndex]?.text ?? "";
 }
 
+function getCheckedLabels(form: HTMLFormElement, name: string) {
+  const fields = form.elements.namedItem(name);
+
+  if (fields instanceof RadioNodeList) {
+    return Array.from(fields)
+      .filter(
+        (field): field is HTMLInputElement =>
+          field instanceof HTMLInputElement && field.checked
+      )
+      .map((field) => field.parentElement?.textContent?.trim() ?? "")
+      .filter(Boolean);
+  }
+
+  if (fields instanceof HTMLInputElement && fields.checked) {
+    return [fields.parentElement?.textContent?.trim() ?? ""].filter(Boolean);
+  }
+
+  return [];
+}
+
 export default function AdminDescriptionAssistant({ formId }: Props) {
   const [canGenerate, setCanGenerate] = useState(false);
 
@@ -70,9 +90,14 @@ export default function AdminDescriptionAssistant({ formId }: Props) {
     const generatedDescription = generateProductDescription({
       brand: String(formData.get("brand") ?? ""),
       name: String(formData.get("name") ?? ""),
-      primaryGroup: getSelectLabel(form, "primaryGroup"),
+      primaryGroup: getCheckedLabels(form, "primaryGroups").join(", "),
       category: getSelectLabel(form, "categorySlug"),
-      colorName: String(formData.get("colorName") ?? ""),
+      colorName: formData
+        .getAll("colorNames")
+        .filter((value): value is string => typeof value === "string")
+        .map((value) => value.trim())
+        .filter(Boolean)
+        .join(", "),
       sizes: parseSizes(String(formData.get("sizes") ?? "")),
       homeSections: formData
         .getAll("homeSections")
@@ -87,7 +112,7 @@ export default function AdminDescriptionAssistant({ formId }: Props) {
   return (
     <div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-[#eadfd5] bg-white px-4 py-3">
       <p className="text-[13px] leading-6 text-[#68788a]">
-        Gere uma descricao automatica com base no nome, marca, categoria, cor e tamanhos do produto.
+        Gere uma descricao automatica com base no nome, marca, categorias, cores e tamanhos do produto.
       </p>
 
       <button

@@ -50,6 +50,12 @@ export default function AdminProductCatalogModal({
   homeSectionLabels,
   compact = false,
 }: CatalogProps) {
+  const primaryCategoryLabelMap: Record<string, string> = {
+    masculino: "Masculino",
+    feminino: "Feminino",
+    infantil: "Infantil",
+    acessorios: "Acessorios",
+  };
   const [isOpen, setIsOpen] = useState(initialIsOpen);
   const [selectedId, setSelectedId] = useState<number | null>(products[0]?.id ?? null);
 
@@ -77,6 +83,13 @@ export default function AdminProductCatalogModal({
 
   const firstItemIndex = totalCount === 0 ? 0 : (page - 1) * pageSize + 1;
   const lastItemIndex = totalCount === 0 ? 0 : Math.min(page * pageSize, totalCount);
+  const primaryCategoryLabels = selectedProduct
+    ? selectedProduct.navGroups
+        .filter((group) =>
+          ["masculino", "feminino", "infantil", "acessorios"].includes(group)
+        )
+        .map((group) => primaryCategoryLabelMap[group] ?? group)
+    : [];
 
   return (
     <>
@@ -341,7 +354,7 @@ export default function AdminProductCatalogModal({
                         </Link>
                       </div>
 
-                      <div className="mt-5 grid gap-4 sm:grid-cols-3">
+                      <div className="mt-5 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
                         <div className="rounded-[20px] border border-[#ece3da] bg-[#fcfbfa] p-4">
                           <p className="text-xs uppercase tracking-[0.18em] text-[#8f5c3d]">
                             Preco
@@ -360,17 +373,36 @@ export default function AdminProductCatalogModal({
                         </div>
                         <div className="rounded-[20px] border border-[#ece3da] bg-[#fcfbfa] p-4">
                           <p className="text-xs uppercase tracking-[0.18em] text-[#8f5c3d]">
-                            Cor
+                            {selectedProduct.colors.length > 1 ? "Cores" : "Cor"}
                           </p>
-                          <div className="mt-2 flex items-center gap-2">
-                            <span
-                              className="block size-5 rounded-full border border-black/10"
-                              style={{ backgroundColor: selectedProduct.color.swatch }}
-                            />
-                            <span className="text-lg font-semibold text-[#171717]">
-                              {selectedProduct.color.name}
-                            </span>
+                          <div className="mt-2 flex flex-wrap items-center gap-2">
+                            {selectedProduct.colors.map((color) => (
+                              <span
+                                key={`${color.name}-${color.swatch}`}
+                                className="block size-5 rounded-full border border-black/10"
+                                style={{ backgroundColor: color.swatch }}
+                              />
+                            ))}
                           </div>
+                          <p className="mt-2 text-lg font-semibold text-[#171717]">
+                            {selectedProduct.colors.map((color) => color.name).join(", ")}
+                          </p>
+                        </div>
+                        <div className="rounded-[20px] border border-[#ece3da] bg-[#fcfbfa] p-4">
+                          <p className="text-xs uppercase tracking-[0.18em] text-[#8f5c3d]">
+                            Categorias principais
+                          </p>
+                          <p className="mt-2 text-lg font-semibold text-[#171717]">
+                            {primaryCategoryLabels.join(", ")}
+                          </p>
+                        </div>
+                        <div className="rounded-[20px] border border-[#ece3da] bg-[#fcfbfa] p-4">
+                          <p className="text-xs uppercase tracking-[0.18em] text-[#8f5c3d]">
+                            Categoria do produto
+                          </p>
+                          <p className="mt-2 text-lg font-semibold text-[#171717]">
+                            {selectedProduct.category}
+                          </p>
                         </div>
                       </div>
 
