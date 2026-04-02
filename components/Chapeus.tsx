@@ -4,5 +4,5 @@ import { getHomeFeaturedProducts } from "@/lib/products";
 export default async function Chapeus() {
   const products = await getHomeFeaturedProducts("chapeus");
 
-  return <HomeProductShelf title="Nossos Chapeus" products={products} />;
+  return <HomeProductShelf title="Nossas Calças" products={products} />;
 }
