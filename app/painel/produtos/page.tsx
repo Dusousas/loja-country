@@ -34,9 +34,9 @@ type ProductAdminPageProps = {
 };
 
 const homeSectionLabels = {
-  promocoes: "Promocoes",
-  chapeus: "Chapeus",
-  infantil: "Infantil",
+  promocoes: "Nossos Destaques",
+  chapeus: "Nossas Calças",
+  infantil: "Nossos Cintos",
 } as const;
 
 export default async function ProductAdminPage({
@@ -102,7 +102,7 @@ export default async function ProductAdminPage({
             </div>
             <div className="rounded-[24px] border border-white/60 bg-white/85 p-5 backdrop-blur">
               <p className="text-xs uppercase tracking-[0.22em] text-[#8f5c3d]">
-                Promocoes
+                Nossos Destaques
               </p>
               <p className="mt-3 text-3xl font-semibold text-[#171717]">
                 {Math.min(summary.showcaseCounts.promocoes, 4)}/4
@@ -110,7 +110,7 @@ export default async function ProductAdminPage({
             </div>
             <div className="rounded-[24px] border border-white/60 bg-white/85 p-5 backdrop-blur">
               <p className="text-xs uppercase tracking-[0.22em] text-[#8f5c3d]">
-                Chapeus
+                Nossas Calças
               </p>
               <p className="mt-3 text-3xl font-semibold text-[#171717]">
                 {Math.min(summary.showcaseCounts.chapeus, 4)}/4
@@ -118,7 +118,7 @@ export default async function ProductAdminPage({
             </div>
             <div className="rounded-[24px] border border-white/60 bg-white/85 p-5 backdrop-blur">
               <p className="text-xs uppercase tracking-[0.22em] text-[#8f5c3d]">
-                Infantil
+                Nossos Cintos
               </p>
               <p className="mt-3 text-3xl font-semibold text-[#171717]">
                 {Math.min(summary.showcaseCounts.infantil, 4)}/4

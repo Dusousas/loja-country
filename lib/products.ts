@@ -21,6 +21,7 @@ export type CategorySlug =
   | "casacos"
   | "chapeus"
   | "cintos"
+  | "shorts"
   | "pijamas"
   | "vestidos";
 
@@ -157,10 +158,10 @@ export const categoryDefinitions: CategoryDefinition[] = [
   },
   {
     slug: "chapeus",
-    label: "Chapeus",
-    title: "Chapeus",
+    label: "Bones e Chapeus",
+    title: "Bones e Chapeus",
     description:
-      "Chapeus com presenca visual e acabamento country para reforcar a categoria de acessorios.",
+      "Selecao combinada de bones e chapeus com identidade country para reforcar a categoria de acessorios.",
   },
   {
     slug: "cintos",
@@ -168,6 +169,13 @@ export const categoryDefinitions: CategoryDefinition[] = [
     title: "Cintos",
     description:
       "Cintos e modelos com fivelas de destaque para elevar o ticket medio dos looks.",
+  },
+  {
+    slug: "shorts",
+    label: "Shorts",
+    title: "Shorts",
+    description:
+      "Shorts com leitura country e caimento confortavel para ampliar o mix casual da loja.",
   },
   {
     slug: "pijamas",
@@ -198,6 +206,7 @@ export const panelProductCategoryOptions = categoryDefinitions.filter((category)
     "casacos",
     "chapeus",
     "cintos",
+    "shorts",
     "pijamas",
     "vestidos",
   ].includes(category.slug)
@@ -387,6 +396,26 @@ export const defaultProducts: Product[] = [
       "Cinto com fivela de destaque para elevar o ticket medio dos looks e completar a categoria de acessorios.",
     navGroups: ["acessorios", "cintos", "masculino"],
     category: "Cintos",
+  },
+  {
+    slug: "short-jeans-country-classico",
+    brand: "Texas Farm",
+    name: "Short Jeans Country Classico",
+    cardTitle: "Short Jeans Country Classico",
+    image: "/img-teste.jpg",
+    gallery: productGallery(),
+    originalPrice: "R$139,90",
+    price: "R$125,91",
+    pixPrice: "R$119,61",
+    pixLabel: "5% OFF a vista no Pix",
+    installments: "Parcelamento em ate 12x com juros",
+    sizes: ["36", "38", "40", "42"],
+    color: { name: "Jeans Medio", swatch: "#5b7694" },
+    categoryTrail: ["Inicio", "Feminino", "Shorts", "Texas Farm"],
+    description:
+      "Short jeans com pegada country e leitura casual para reforcar o mix de pecas leves da loja.",
+    navGroups: ["feminino", "shorts"],
+    category: "Shorts",
   },
   {
     slug: "pijama-feminino-country-rosa",
@@ -948,10 +977,29 @@ export function getCategoryBySlug(slug: string) {
 
 export async function getProductsForCategory(slug: CategorySlug) {
   if (!isDatabaseConfigured()) {
+    if (slug === "chapeus") {
+      return defaultProducts.filter((product) =>
+        product.navGroups.some((group) => ["bones", "chapeus"].includes(group))
+      );
+    }
+
     return defaultProducts.filter((product) => product.navGroups.includes(slug));
   }
 
   return queryProducts(async (client) => {
+    if (slug === "chapeus") {
+      const result = await client.query(
+        `
+          SELECT *
+          FROM products
+          WHERE nav_groups ?| ARRAY['bones', 'chapeus']
+          ORDER BY created_at DESC, id DESC
+        `
+      );
+
+      return result.rows.map((row) => rowToProduct(row));
+    }
+
     const result = await client.query(
       "SELECT * FROM products WHERE nav_groups @> $1::jsonb ORDER BY created_at DESC, id DESC",
       [JSON.stringify([slug])]

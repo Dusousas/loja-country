@@ -24,9 +24,9 @@ type EditProductPageProps = {
 };
 
 const homeSectionLabels = {
-  promocoes: "Promocoes",
-  chapeus: "Chapeus",
-  infantil: "Infantil",
+  promocoes: "Nossos Destaques",
+  chapeus: "Nossas Calças",
+  infantil: "Nossos Cintos",
 } as const;
 
 function getProductCategorySlug(label: string) {

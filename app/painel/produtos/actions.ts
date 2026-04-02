@@ -80,6 +80,10 @@ function revalidateProductExperience(slug: string, navGroups: string[]) {
   revalidatePath("/painel/produtos");
   revalidatePath(`/produtos/${slug}`);
 
+  if (navGroups.some((group) => ["bones", "chapeus"].includes(group))) {
+    revalidatePath("/categorias/chapeus");
+  }
+
   for (const group of navGroups) {
     revalidatePath(`/categorias/${group}`);
   }
@@ -329,6 +333,14 @@ export async function updateProductFromPanel(formData: FormData) {
     revalidatePath("/painel/produtos");
     revalidatePath(`/produtos/${currentProduct.slug}`);
     revalidatePath(`/produtos/${updatedProduct.slug}`);
+
+    if (
+      [...currentProduct.navGroups, ...updatedProduct.navGroups].some((group) =>
+        ["bones", "chapeus"].includes(group)
+      )
+    ) {
+      revalidatePath("/categorias/chapeus");
+    }
 
     for (const group of currentProduct.navGroups) {
       revalidatePath(`/categorias/${group}`);

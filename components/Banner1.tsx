@@ -16,12 +16,12 @@ export default function Banner1() {
             />
             <Link
               href="/categorias/chapeus"
-              aria-label="Ir para a categoria Chapeus"
+              aria-label="Ir para a categoria Bones e Chapeus"
               className="absolute inset-y-0 left-0 w-1/2 cursor-pointer"
             />
             <Link
-              href="/categorias/bones"
-              aria-label="Ir para a categoria Bones"
+              href="/categorias/chapeus"
+              aria-label="Ir para a categoria Bones e Chapeus"
               className="absolute inset-y-0 right-0 w-1/2 cursor-pointer"
             />
           </div>

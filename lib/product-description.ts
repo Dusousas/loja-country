@@ -77,6 +77,10 @@ function getCategoryPhrase(category: string) {
     return "que valoriza a producao e deixa o look mais completo";
   }
 
+  if (normalized === "shorts") {
+    return "ideal para montar looks leves com conforto e uma leitura country atual";
+  }
+
   if (normalized === "pijamas") {
     return "pensado para oferecer conforto sem abrir mao do estilo";
   }
