@@ -4,6 +4,7 @@ import "./globals.css";
 import CookieConsentBanner from "@/components/CookieConsentBanner";
 import GoogleAnalytics from "@/components/GoogleAnalytics";
 import SiteChrome from "@/components/layout/SiteChrome";
+import { getAnnouncementMessages } from "@/lib/site-settings";
 
 const poppins = Poppins({
   variable: "--font-poppins",
@@ -74,16 +75,20 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const announcementMessages = await getAnnouncementMessages();
+
   return (
     <html lang="pt-BR" className={`${poppins.variable} h-full antialiased`}>
       <body className="min-h-full bg-white text-[#171717]">
         <GoogleAnalytics />
-        <SiteChrome>{children}</SiteChrome>
+        <SiteChrome announcementMessages={announcementMessages}>
+          {children}
+        </SiteChrome>
         <CookieConsentBanner />
       </body>
     </html>

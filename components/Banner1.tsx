@@ -1,7 +1,7 @@
-"use client";
-
+import Image from "next/image";
 import Link from "next/link";
-import React from "react";
+
+import chapeusBanner from "@/public/chapeu-bones.jpg";
 
 export default function Banner1() {
   return (
@@ -9,10 +9,11 @@ export default function Banner1() {
       <section>
         <div className="maxW">
           <div className="relative">
-            <img
-              className="w-full cursor-pointer"
-              src="/chapeu-bones.jpg"
+            <Image
+              className="h-auto w-full"
+              src={chapeusBanner}
               alt="Categorias Chapeus e Bones"
+              sizes="100vw"
             />
             <Link
               href="/categorias/chapeus"

@@ -1,36 +1,41 @@
-"use client";
-
 import Image from "next/image";
 import Link from "next/link";
 
-export default function Instagram() {
-  const instagramImages = [
-    {
-      image: "/Insta/insta1.jpg",
-      link: "https://www.instagram.com/p/DUEhVJKD7PM/?img_index=1",
-    },
-    {
-      image: "/Insta/insta2.jpg",
-      link: "https://www.instagram.com/p/DSvEqSvCQ_T/",
-    },
-    {
-      image: "/Insta/insta3.jpg",
-      link: "https://www.instagram.com/p/DUBmRiVCYHR/",
-    },
-    {
-      image: "/Insta/insta4.jpg",
-      link: "https://www.instagram.com/p/DQIOat8Cb6S/",
-    },
-    {
-      image: "/Insta/insta5.jpg",
-      link: "https://www.instagram.com/p/DPsBPsTiQkN/?img_index=1",
-    },
-    {
-      image: "/Insta/insta6.jpg",
-      link: "https://www.instagram.com/p/DOLfKqTjR1_/",
-    },
-  ];
+import insta1 from "@/public/Insta/insta1.jpg";
+import insta2 from "@/public/Insta/insta2.jpg";
+import insta3 from "@/public/Insta/insta3.jpg";
+import insta4 from "@/public/Insta/insta4.jpg";
+import insta5 from "@/public/Insta/insta5.jpg";
+import insta6 from "@/public/Insta/insta6.jpg";
 
+const instagramImages = [
+  {
+    image: insta1,
+    link: "https://www.instagram.com/p/DUEhVJKD7PM/?img_index=1",
+  },
+  {
+    image: insta2,
+    link: "https://www.instagram.com/p/DSvEqSvCQ_T/",
+  },
+  {
+    image: insta3,
+    link: "https://www.instagram.com/p/DUBmRiVCYHR/",
+  },
+  {
+    image: insta4,
+    link: "https://www.instagram.com/p/DQIOat8Cb6S/",
+  },
+  {
+    image: insta5,
+    link: "https://www.instagram.com/p/DPsBPsTiQkN/?img_index=1",
+  },
+  {
+    image: insta6,
+    link: "https://www.instagram.com/p/DOLfKqTjR1_/",
+  },
+];
+
+export default function Instagram() {
   return (
     <section className="bg-gradient-to-br  from-purple-50 via-pink-50 to-orange-50">
       <div className="maxW px-4">
@@ -81,8 +86,7 @@ export default function Instagram() {
                 fill
                 sizes="(max-width: 768px) 50vw, (max-width: 1024px) 33vw, 16vw"
                 className="object-cover group-hover:scale-110 transition-transform duration-500"
-                quality={80}
-                priority={index < 2}
+                quality={70}
               />
 
               {/* Overlay hover (não pode capturar clique) */}

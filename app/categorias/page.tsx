@@ -1,11 +1,14 @@
 import type { Metadata } from "next";
 import CategoryListingView from "@/components/category/CategoryListingView";
-import { getCatalogProducts } from "@/lib/products";
+import { getCatalogProductsPage } from "@/lib/products";
 
 export const dynamic = "force-dynamic";
 
 type CatalogPageProps = {
-  searchParams?: Promise<{ q?: string | string[] | undefined }>;
+  searchParams?: Promise<{
+    q?: string | string[] | undefined;
+    page?: string | string[] | undefined;
+  }>;
 };
 
 function getQueryValue(value: string | string[] | undefined) {
@@ -14,6 +17,11 @@ function getQueryValue(value: string | string[] | undefined) {
   }
 
   return typeof value === "string" ? value.trim() : "";
+}
+
+function getPageValue(value: string | string[] | undefined) {
+  const page = Number(getQueryValue(value));
+  return Number.isFinite(page) && page > 0 ? Math.floor(page) : 1;
 }
 
 export async function generateMetadata({
@@ -38,11 +46,16 @@ export async function generateMetadata({
 export default async function CatalogPage({ searchParams }: CatalogPageProps) {
   const params = searchParams ? await searchParams : {};
   const query = getQueryValue(params.q);
-  const products = await getCatalogProducts({ query });
+  const requestedPage = getPageValue(params.page);
+  const catalog = await getCatalogProductsPage({
+    query,
+    page: requestedPage,
+    pageSize: 12,
+  });
 
   return (
     <CategoryListingView
-      products={products}
+      products={catalog.products}
       title={query ? `Resultados para "${query}"` : "Catalogo"}
       description={
         query
@@ -60,6 +73,11 @@ export default async function CatalogPage({ searchParams }: CatalogPageProps) {
           ? `Nao encontramos produtos para "${query}". Tente outro termo ou ajuste os filtros.`
           : "Nenhum produto cadastrado no catalogo no momento."
       }
+      currentPage={catalog.page}
+      totalPages={catalog.totalPages}
+      totalCount={catalog.totalCount}
+      paginationBasePath="/categorias"
+      paginationQuery={query ? { q: query } : undefined}
     />
   );
 }

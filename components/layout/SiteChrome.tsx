@@ -6,11 +6,15 @@ import Header from "@/components/Header";
 
 type SiteChromeProps = {
   children: React.ReactNode;
+  announcementMessages: string[];
 };
 
 const chromeLessRoutes = new Set(["/links"]);
 
-export default function SiteChrome({ children }: SiteChromeProps) {
+export default function SiteChrome({
+  children,
+  announcementMessages,
+}: SiteChromeProps) {
   const pathname = usePathname();
   const shouldHideChrome = pathname ? chromeLessRoutes.has(pathname) : false;
 
@@ -20,7 +24,7 @@ export default function SiteChrome({ children }: SiteChromeProps) {
 
   return (
     <div className="flex min-h-full flex-col">
-      <Header />
+      <Header announcementMessages={announcementMessages} />
       <main className="flex-1">{children}</main>
       <Footer />
     </div>

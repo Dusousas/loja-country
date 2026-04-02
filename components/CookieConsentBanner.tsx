@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 const KEY = "cookie_consent";
 const CONSENT_EVENT = "cookie-consent-change";
@@ -14,11 +14,7 @@ function readConsent(): Consent | null {
 }
 
 export default function CookieConsentBanner() {
-  const [consent, setConsent] = useState<Consent | null>(null);
-
-  useEffect(() => {
-    setConsent(readConsent());
-  }, []);
+  const [consent, setConsent] = useState<Consent | null>(() => readConsent());
 
   function handleConsent(nextConsent: Consent) {
     localStorage.setItem(KEY, nextConsent);

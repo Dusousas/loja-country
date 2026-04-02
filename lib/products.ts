@@ -74,6 +74,14 @@ export type AdminProductCatalogResult = {
   query: string;
 };
 
+export type ProductCatalogPageResult = {
+  products: Product[];
+  page: number;
+  pageSize: number;
+  totalCount: number;
+  totalPages: number;
+};
+
 export type CategoryDefinition = {
   slug: CategorySlug;
   label: string;
@@ -597,6 +605,16 @@ function getNormalizedGallery(image: string, gallery: string[]) {
   return normalizedGallery.length > 0 ? normalizedGallery : [image];
 }
 
+function normalizePagination(page?: number, pageSize?: number) {
+  const normalizedPageSize = Math.min(Math.max(Math.trunc(pageSize ?? 12) || 12, 1), 48);
+  const normalizedPage = Math.max(Math.trunc(page ?? 1) || 1, 1);
+
+  return {
+    page: normalizedPage,
+    pageSize: normalizedPageSize,
+  };
+}
+
 function rowToProduct(row: Record<string, unknown>): Product {
   const image = String(row.image);
   const fallbackColors = normalizeColorEntries([
@@ -1023,6 +1041,88 @@ export async function getCatalogProducts(options?: { query?: string }) {
   });
 }
 
+export async function getCatalogProductsPage(options?: {
+  query?: string;
+  page?: number;
+  pageSize?: number;
+}): Promise<ProductCatalogPageResult> {
+  const { page: requestedPage, pageSize } = normalizePagination(
+    options?.page,
+    options?.pageSize
+  );
+
+  if (!isDatabaseConfigured()) {
+    const query = normalizeSearchTerm(options?.query ?? "");
+    const filteredProducts = defaultProducts.filter((product) =>
+      productMatchesQuery(product, query)
+    );
+    const totalCount = filteredProducts.length;
+    const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
+    const page = Math.min(requestedPage, totalPages);
+    const offset = (page - 1) * pageSize;
+
+    return {
+      products: filteredProducts.slice(offset, offset + pageSize),
+      page,
+      pageSize,
+      totalCount,
+      totalPages,
+    };
+  }
+
+  return queryProducts(async (client) => {
+    const query = normalizeSearchTerm(options?.query ?? "");
+    const values: string[] = [];
+    let whereClause = "";
+
+    if (query) {
+      values.push(`%${query}%`);
+      const placeholder = `$${values.length}`;
+      whereClause = `
+        WHERE (
+          name ILIKE ${placeholder}
+          OR brand ILIKE ${placeholder}
+          OR slug ILIKE ${placeholder}
+          OR category ILIKE ${placeholder}
+          OR description ILIKE ${placeholder}
+          OR category_trail::text ILIKE ${placeholder}
+        )
+      `;
+    }
+
+    const countResult = await client.query<{ total: string }>(
+      `SELECT COUNT(*)::text AS total FROM products ${whereClause}`,
+      values
+    );
+    const totalCount = Number(countResult.rows[0]?.total ?? "0");
+    const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
+    const page = Math.min(requestedPage, totalPages);
+    const offset = (page - 1) * pageSize;
+    const dataValues = [...values, String(pageSize), String(offset)];
+    const limitPlaceholder = `$${dataValues.length - 1}`;
+    const offsetPlaceholder = `$${dataValues.length}`;
+    const result = await client.query(
+      `
+        SELECT *
+        FROM products
+        ${whereClause}
+        ORDER BY created_at DESC, id DESC
+        LIMIT ${limitPlaceholder}::int
+        OFFSET ${offsetPlaceholder}::int
+      `,
+      dataValues
+    );
+
+    return {
+      products: result.rows.map((row) => rowToProduct(row)),
+      page,
+      pageSize,
+      totalCount,
+      totalPages,
+    };
+  });
+}
+
 export async function getHomeFeaturedProducts(section: HomeSection) {
   if (!isDatabaseConfigured()) {
     return getFallbackHomeProducts(section);
@@ -1090,6 +1190,80 @@ export async function getProductsForCategory(slug: CategorySlug) {
     );
 
     return result.rows.map((row) => rowToProduct(row));
+  });
+}
+
+export async function getProductsForCategoryPage(
+  slug: CategorySlug,
+  options?: { page?: number; pageSize?: number }
+): Promise<ProductCatalogPageResult> {
+  const { page: requestedPage, pageSize } = normalizePagination(
+    options?.page,
+    options?.pageSize
+  );
+
+  if (!isDatabaseConfigured()) {
+    const filteredProducts =
+      slug === "chapeus"
+        ? defaultProducts.filter((product) =>
+            product.navGroups.some((group) => ["bones", "chapeus"].includes(group))
+          )
+        : defaultProducts.filter((product) => product.navGroups.includes(slug));
+    const totalCount = filteredProducts.length;
+    const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
+    const page = Math.min(requestedPage, totalPages);
+    const offset = (page - 1) * pageSize;
+
+    return {
+      products: filteredProducts.slice(offset, offset + pageSize),
+      page,
+      pageSize,
+      totalCount,
+      totalPages,
+    };
+  }
+
+  return queryProducts(async (client) => {
+    const values: string[] = [];
+    let whereClause = "";
+
+    if (slug === "chapeus") {
+      whereClause = "WHERE nav_groups ?| ARRAY['bones', 'chapeus']";
+    } else {
+      values.push(JSON.stringify([slug]));
+      whereClause = `WHERE nav_groups @> $${values.length}::jsonb`;
+    }
+
+    const countResult = await client.query<{ total: string }>(
+      `SELECT COUNT(*)::text AS total FROM products ${whereClause}`,
+      values
+    );
+    const totalCount = Number(countResult.rows[0]?.total ?? "0");
+    const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
+    const page = Math.min(requestedPage, totalPages);
+    const offset = (page - 1) * pageSize;
+    const dataValues = [...values, String(pageSize), String(offset)];
+    const limitPlaceholder = `$${dataValues.length - 1}`;
+    const offsetPlaceholder = `$${dataValues.length}`;
+    const result = await client.query(
+      `
+        SELECT *
+        FROM products
+        ${whereClause}
+        ORDER BY created_at DESC, id DESC
+        LIMIT ${limitPlaceholder}::int
+        OFFSET ${offsetPlaceholder}::int
+      `,
+      dataValues
+    );
+
+    return {
+      products: result.rows.map((row) => rowToProduct(row)),
+      page,
+      pageSize,
+      totalCount,
+      totalPages,
+    };
   });
 }
 

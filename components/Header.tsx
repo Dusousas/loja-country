@@ -30,7 +30,11 @@ const socialActions = [
   },
 ];
 
-export default function Header() {
+type HeaderProps = {
+  announcementMessages: string[];
+};
+
+export default function Header({ announcementMessages }: HeaderProps) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   useEffect(() => {
@@ -51,7 +55,7 @@ export default function Header() {
 
   return (
     <header className="border-b border-black/10 bg-white">
-      <AnnouncementBar />
+      <AnnouncementBar messages={announcementMessages} />
 
       <div className="lg:hidden">
         <section className="bg-white px-4 py-4 text-[#171717]">

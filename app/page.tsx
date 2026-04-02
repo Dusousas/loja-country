@@ -1,26 +1,31 @@
 import Banner1 from "@/components/Banner1";
 import Blusas from "@/components/Blusas";
-import Chapeus from "@/components/Chapeus";
 import Hero from "@/components/Hero";
-import Infantil from "@/components/Infantil";
 import Instagram from "@/components/Instagram";
 import LineIcons from "@/components/LineIcons";
-import Promocao from "@/components/Promocao";
 import Sex from "@/components/Sex";
+import HomeProductShelf from "@/components/home/HomeProductShelf";
+import { getHomeFeaturedProducts } from "@/lib/products";
 
 export const dynamic = "force-dynamic";
 
-export default function Home() {
+export default async function Home() {
+  const [promocoesProducts, chapeusProducts, infantilProducts] = await Promise.all([
+    getHomeFeaturedProducts("promocoes"),
+    getHomeFeaturedProducts("chapeus"),
+    getHomeFeaturedProducts("infantil"),
+  ]);
+
   return (
     <>
       <Hero />
-      <Promocao />
+      <HomeProductShelf title="Nossos Destaques" products={promocoesProducts} />
       <LineIcons />
       <Sex />
-      <Chapeus />
+      <HomeProductShelf title="Nossas Calças" products={chapeusProducts} />
       <Banner1 />
       <Blusas />
-      <Infantil />
+      <HomeProductShelf title="Nossos Cintos" products={infantilProducts} />
       <Instagram />
     </>
   );

@@ -34,34 +34,42 @@ export default function HomeProductShelf({
   useEffect(() => {
     const track = trackRef.current;
 
-    if (!track) {
+    if (!track || products.length <= 1) {
       return;
     }
 
-    const handleScroll = () => {
-      const cards = Array.from(track.children) as HTMLElement[];
-      const trackLeft = track.getBoundingClientRect().left;
+    const cards = Array.from(track.children) as HTMLElement[];
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const visibleEntry = entries
+          .filter((entry) => entry.isIntersecting)
+          .sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
 
-      let nextIndex = 0;
-      let smallestDistance = Number.POSITIVE_INFINITY;
-
-      cards.forEach((card, index) => {
-        const distance = Math.abs(card.getBoundingClientRect().left - trackLeft);
-
-        if (distance < smallestDistance) {
-          smallestDistance = distance;
-          nextIndex = index;
+        if (!visibleEntry) {
+          return;
         }
-      });
 
-      setActiveIndex(nextIndex);
-    };
+        const nextIndex = Number(
+          (visibleEntry.target as HTMLElement).dataset.index ?? 0
+        );
 
-    handleScroll();
-    track.addEventListener("scroll", handleScroll, { passive: true });
+        if (Number.isFinite(nextIndex)) {
+          setActiveIndex(nextIndex);
+        }
+      },
+      {
+        root: track,
+        threshold: [0.6, 0.75, 0.9],
+      }
+    );
+
+    cards.forEach((card, index) => {
+      card.dataset.index = String(index);
+      observer.observe(card);
+    });
 
     return () => {
-      track.removeEventListener("scroll", handleScroll);
+      observer.disconnect();
     };
   }, [products.length]);
 

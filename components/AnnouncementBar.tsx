@@ -1,93 +1,50 @@
 "use client";
 
-import { useEffect, useState } from "react";
-
 const fallbackMessages = [
   "Frete gratis para todo o Brasil",
   "Parcele em ate 12x com juros",
   "5% OFF a vista no Pix",
 ];
 
-type SiteSettingsResponse = {
-  announcementMessages?: string[];
+type AnnouncementBarProps = {
+  messages?: string[];
 };
 
-export default function AnnouncementBar() {
-  const [messages, setMessages] = useState(fallbackMessages);
-  const [activeIndex, setActiveIndex] = useState(0);
-  const [isVisible, setIsVisible] = useState(true);
+export default function AnnouncementBar({
+  messages = fallbackMessages,
+}: AnnouncementBarProps) {
+  const normalizedMessages = messages.filter((message) => message.trim().length > 0);
+  const items = normalizedMessages.length > 0 ? normalizedMessages : fallbackMessages;
 
-  useEffect(() => {
-    let isActive = true;
+  if (items.length === 1) {
+    return (
+      <section className="overflow-hidden bg-[#171717] py-2">
+        <div className="maxW">
+          <p className="text-center text-xs font-medium uppercase tracking-[0.24em] text-white sm:text-sm">
+            {items[0]}
+          </p>
+        </div>
+      </section>
+    );
+  }
 
-    async function loadMessages() {
-      try {
-        const response = await fetch("/api/site-settings", {
-          cache: "no-store",
-        });
-
-        if (!response.ok) {
-          return;
-        }
-
-        const data = (await response.json()) as SiteSettingsResponse;
-        const nextMessages = Array.isArray(data.announcementMessages)
-          ? data.announcementMessages.filter(
-              (message): message is string =>
-                typeof message === "string" && message.trim().length > 0
-            )
-          : [];
-
-        if (isActive && nextMessages.length > 0) {
-          setMessages(nextMessages);
-        }
-      } catch {
-        // Keep fallback messages when the request is unavailable.
-      }
-    }
-
-    void loadMessages();
-
-    return () => {
-      isActive = false;
-    };
-  }, []);
-
-  useEffect(() => {
-    setActiveIndex(0);
-    setIsVisible(true);
-  }, [messages]);
-
-  useEffect(() => {
-    if (messages.length <= 1) {
-      return;
-    }
-
-    const interval = window.setInterval(() => {
-      setIsVisible(false);
-
-      window.setTimeout(() => {
-        setActiveIndex((current) => (current + 1) % messages.length);
-        setIsVisible(true);
-      }, 220);
-    }, 3200);
-
-    return () => {
-      window.clearInterval(interval);
-    };
-  }, [messages]);
+  const marqueeItems = [...items, ...items];
 
   return (
     <section className="overflow-hidden bg-[#171717] py-2">
       <div className="maxW">
-        <p
-          aria-live="polite"
-          className={`text-center text-xs font-medium uppercase tracking-[0.24em] text-white transition-opacity duration-200 sm:text-sm ${
-            isVisible ? "opacity-100" : "opacity-0"
-          }`}
-        >
-          {messages[activeIndex] ?? fallbackMessages[0]}
-        </p>
+        <div className="announcement-marquee" aria-label="Avisos da loja">
+          <div className="announcement-marquee__track">
+            {marqueeItems.map((message, index) => (
+              <span
+                key={`${message}-${index}`}
+                className="announcement-marquee__item text-xs font-medium uppercase tracking-[0.24em] text-white sm:text-sm"
+              >
+                {message}
+              </span>
+            ))}
+          </div>
+        </div>
       </div>
     </section>
   );

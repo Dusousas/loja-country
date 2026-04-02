@@ -20,6 +20,11 @@ type CategoryListingViewProps = {
   }>;
   showCategoryFilter?: boolean;
   emptyDescription?: string;
+  currentPage?: number;
+  totalPages?: number;
+  totalCount?: number;
+  paginationBasePath?: string;
+  paginationQuery?: Record<string, string>;
 };
 
 function parsePrice(price: string) {
@@ -32,6 +37,27 @@ function parsePrice(price: string) {
   );
 }
 
+function buildPaginationHref(
+  basePath: string,
+  page: number,
+  query?: Record<string, string>
+) {
+  const params = new URLSearchParams();
+
+  for (const [key, value] of Object.entries(query ?? {})) {
+    if (value) {
+      params.set(key, value);
+    }
+  }
+
+  if (page > 1) {
+    params.set("page", String(page));
+  }
+
+  const queryString = params.toString();
+  return queryString ? `${basePath}?${queryString}` : basePath;
+}
+
 export default function CategoryListingView({
   category,
   products,
@@ -40,6 +66,11 @@ export default function CategoryListingView({
   breadcrumbItems,
   showCategoryFilter,
   emptyDescription,
+  currentPage = 1,
+  totalPages = 1,
+  totalCount,
+  paginationBasePath,
+  paginationQuery,
 }: CategoryListingViewProps) {
   const [selectedBrands, setSelectedBrands] = useState<string[]>([]);
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
@@ -120,6 +151,7 @@ export default function CategoryListingView({
 
   const activeFilterCount =
     selectedBrands.length + selectedCategories.length + selectedColors.length;
+  const resolvedTotalCount = totalCount ?? filteredProducts.length;
 
   useEffect(() => {
     const previousOverflow = document.body.style.overflow;
@@ -286,8 +318,13 @@ export default function CategoryListingView({
                 <div className="hidden flex-wrap items-center gap-x-6 gap-y-3 xl:justify-end xl:flex">
                   <p className="text-[14px] text-[#5f6d80]">
                     Exibindo <span className="font-semibold text-[#17345c]">{filteredProducts.length}</span>{" "}
-                    produtos
+                    de {resolvedTotalCount} produtos
                   </p>
+                  {totalPages > 1 && (
+                    <p className="text-[14px] font-semibold text-[#17345c]">
+                      Pagina {currentPage} de {totalPages}
+                    </p>
+                  )}
                   <div className="flex items-center gap-3">
                     <label
                       htmlFor="sort-order"
@@ -421,6 +458,46 @@ export default function CategoryListingView({
                   {emptyDescription ??
                     "Ajuste os filtros da sidebar para encontrar outras opcoes."}
                 </p>
+              </div>
+            )}
+
+            {totalPages > 1 && paginationBasePath && (
+              <div className="mt-8 flex flex-wrap items-center justify-center gap-3 border-t border-[#e5ddd5] pt-6">
+                <Link
+                  href={buildPaginationHref(
+                    paginationBasePath,
+                    Math.max(currentPage - 1, 1),
+                    paginationQuery
+                  )}
+                  aria-disabled={currentPage <= 1}
+                  className={`inline-flex items-center justify-center rounded-full px-5 py-3 text-xs font-semibold uppercase tracking-[0.16em] ${
+                    currentPage <= 1
+                      ? "pointer-events-none border border-[#e7ddd3] bg-white text-[#b6b0a9]"
+                      : "border border-[#d8c9bb] bg-white text-[#17345c] transition-colors hover:border-[#17345c]"
+                  }`}
+                >
+                  Pagina anterior
+                </Link>
+
+                <span className="rounded-full bg-[#f5efe8] px-4 py-2 text-xs font-semibold uppercase tracking-[0.16em] text-[#8f5c3d]">
+                  {currentPage} / {totalPages}
+                </span>
+
+                <Link
+                  href={buildPaginationHref(
+                    paginationBasePath,
+                    Math.min(currentPage + 1, totalPages),
+                    paginationQuery
+                  )}
+                  aria-disabled={currentPage >= totalPages}
+                  className={`inline-flex items-center justify-center rounded-full px-5 py-3 text-xs font-semibold uppercase tracking-[0.16em] ${
+                    currentPage >= totalPages
+                      ? "pointer-events-none border border-[#e7ddd3] bg-white text-[#b6b0a9]"
+                      : "border border-[#17345c] bg-[#17345c] text-white transition-colors hover:bg-[#21497d]"
+                  }`}
+                >
+                  Proxima pagina
+                </Link>
               </div>
             )}
           </div>

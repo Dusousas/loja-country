@@ -1,7 +1,8 @@
-"use client";
-
+import Image from "next/image";
 import Link from "next/link";
-import React from "react";
+
+import femininoImage from "@/public/Feminino.avif";
+import masculinoImage from "@/public/Masculino1.avif";
 
 export default function Sex() {
   return (
@@ -10,17 +11,19 @@ export default function Sex() {
         <div className="maxW py-10">
           <article className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <Link href="/categorias/feminino" className="block cursor-pointer">
-              <img
-                className="w-full cursor-pointer"
-                src="/Feminino.avif"
+              <Image
+                className="h-auto w-full"
+                src={femininoImage}
                 alt="Categoria Feminino"
+                sizes="(max-width: 640px) 100vw, 50vw"
               />
             </Link>
             <Link href="/categorias/masculino" className="block cursor-pointer">
-              <img
-                className="w-full cursor-pointer"
-                src="/Masculino1.avif"
+              <Image
+                className="h-auto w-full"
+                src={masculinoImage}
                 alt="Categoria Masculino"
+                sizes="(max-width: 640px) 100vw, 50vw"
               />
             </Link>
           </article>
