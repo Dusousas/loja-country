@@ -1,36 +1,12 @@
 "use client";
 
 import Script from "next/script";
-import { useEffect, useState } from "react";
-
-const KEY = "cookie_consent";
-const CONSENT_EVENT = "cookie-consent-change";
-type Consent = "accepted" | "rejected";
-
-function readConsent(): Consent | null {
-  if (typeof window === "undefined") return null;
-  const value = localStorage.getItem(KEY);
-  if (value === "accepted" || value === "rejected") return value;
-  return null;
-}
+import {
+  useCookieConsent,
+} from "@/lib/cookie-consent";
 
 export default function GoogleAnalytics() {
-  const [enabled, setEnabled] = useState(() => readConsent() === "accepted");
-
-  useEffect(() => {
-    function syncConsent() {
-      setEnabled(readConsent() === "accepted");
-    }
-
-    syncConsent();
-    window.addEventListener("storage", syncConsent);
-    window.addEventListener(CONSENT_EVENT, syncConsent);
-
-    return () => {
-      window.removeEventListener("storage", syncConsent);
-      window.removeEventListener(CONSENT_EVENT, syncConsent);
-    };
-  }, []);
+  const enabled = useCookieConsent() === "accepted";
 
   if (!enabled) return null;
 

@@ -1,25 +1,16 @@
 "use client";
 
-import { useState } from "react";
-
-const KEY = "cookie_consent";
-const CONSENT_EVENT = "cookie-consent-change";
-type Consent = "accepted" | "rejected";
-
-function readConsent(): Consent | null {
-  if (typeof window === "undefined") return null;
-  const value = localStorage.getItem(KEY);
-  if (value === "accepted" || value === "rejected") return value;
-  return null;
-}
+import {
+  type CookieConsent,
+  useCookieConsent,
+  writeCookieConsent,
+} from "@/lib/cookie-consent";
 
 export default function CookieConsentBanner() {
-  const [consent, setConsent] = useState<Consent | null>(() => readConsent());
+  const consent = useCookieConsent();
 
-  function handleConsent(nextConsent: Consent) {
-    localStorage.setItem(KEY, nextConsent);
-    setConsent(nextConsent);
-    window.dispatchEvent(new Event(CONSENT_EVENT));
+  function handleConsent(nextConsent: CookieConsent) {
+    writeCookieConsent(nextConsent);
   }
 
   if (consent !== null) {
