@@ -109,6 +109,15 @@ export type ProductFormInput = {
   homeSections?: HomeSection[];
 };
 
+const fallbackReusableProductColorsSeed: ProductColor[] = [
+  { name: "Marinho", swatch: "#17345c" },
+  { name: "Caramelo", swatch: "#8b5a34" },
+  { name: "Terracota", swatch: "#b65e4c" },
+  { name: "Caqui", swatch: "#b7976a" },
+  { name: "Vinho", swatch: "#7b2333" },
+  { name: "Preto", swatch: "#262626" },
+];
+
 export const categoryDefinitions: CategoryDefinition[] = [
   {
     slug: "masculino",
@@ -565,6 +574,10 @@ function normalizeColorEntries(colors: ProductColor[]) {
   return Array.from(uniqueColors.values());
 }
 
+function getFallbackReusableProductColors() {
+  return normalizeColorEntries(fallbackReusableProductColorsSeed);
+}
+
 function getCategoryLabel(slug: CategorySlug) {
   return (
     categoryDefinitions.find((category) => category.slug === slug)?.label ?? slug
@@ -758,6 +771,27 @@ async function pruneHomeSection(client: PoolClient, section: HomeSection) {
   );
 }
 
+async function persistReusableProductColors(
+  client: PoolClient,
+  colors: ProductColor[]
+) {
+  const normalizedColors = normalizeColorEntries(colors);
+
+  if (normalizedColors.length === 0) {
+    return;
+  }
+
+  await client.query(
+    `
+      INSERT INTO reusable_product_colors (name, swatch, created_at, updated_at)
+      SELECT item.name, item.swatch, NOW(), NOW()
+      FROM jsonb_to_recordset($1::jsonb) AS item(name text, swatch text)
+      ON CONFLICT DO NOTHING
+    `,
+    [JSON.stringify(normalizedColors)]
+  );
+}
+
 async function ensureDatabaseReady() {
   if (!databaseReadyPromise) {
     databaseReadyPromise = (async () => {
@@ -794,6 +828,21 @@ async function ensureDatabaseReady() {
           created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
           updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
         )
+      `);
+
+      await pool.query(`
+        CREATE TABLE IF NOT EXISTS reusable_product_colors (
+          id SERIAL PRIMARY KEY,
+          name TEXT NOT NULL,
+          swatch TEXT NOT NULL,
+          created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+          updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+        )
+      `);
+
+      await pool.query(`
+        CREATE UNIQUE INDEX IF NOT EXISTS reusable_product_colors_name_swatch_idx
+        ON reusable_product_colors (LOWER(name), LOWER(swatch))
       `);
 
       await pool.query(`
@@ -859,6 +908,29 @@ export async function getAdminProductById(productId: number) {
     ]);
 
     return result.rows[0] ? rowToAdminProduct(result.rows[0]) : undefined;
+  });
+}
+
+export async function getReusableProductColors() {
+  if (!isDatabaseConfigured()) {
+    return getFallbackReusableProductColors();
+  }
+
+  return queryProducts(async (client) => {
+    const result = await client.query(
+      `
+        SELECT name, swatch
+        FROM reusable_product_colors
+        ORDER BY LOWER(name) ASC, LOWER(swatch) ASC, id ASC
+      `
+    );
+
+    return normalizeColorEntries(
+      result.rows.map((row) => ({
+        name: String(row.name ?? ""),
+        swatch: String(row.swatch ?? ""),
+      }))
+    );
   });
 }
 
@@ -1407,6 +1479,8 @@ export async function createProduct(input: ProductFormInput) {
       ]
     );
 
+    await persistReusableProductColors(client, colors);
+
     for (const section of homeSections) {
       await pruneHomeSection(client, section);
     }
@@ -1567,6 +1641,8 @@ export async function updateProduct(productId: number, input: ProductFormInput) 
         homeSections.includes("infantil"),
       ]
     );
+
+    await persistReusableProductColors(client, colors);
 
     for (const section of homeSections) {
       await pruneHomeSection(client, section);

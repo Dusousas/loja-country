@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 import { FiTrash2 } from "react-icons/fi";
+import { shouldDisableImageOptimization } from "@/lib/image-utils";
 
 type GalleryPreview = {
   id: string;
@@ -127,6 +128,8 @@ export default function AdminGalleryFilesField() {
                     src={preview.url}
                     alt={preview.name}
                     fill
+                    sizes="(max-width: 640px) 50vw, 160px"
+                    unoptimized={shouldDisableImageOptimization(preview.url)}
                     className="object-cover"
                   />
                 </div>

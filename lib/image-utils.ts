@@ -1,3 +1,3 @@
-export function isUploadedImage(src: string) {
-  return src.startsWith("/uploads/");
+export function shouldDisableImageOptimization(src: string) {
+  return src.startsWith("blob:") || src.startsWith("data:");
 }

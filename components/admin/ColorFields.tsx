@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { FiCheck, FiPlus, FiTrash2 } from "react-icons/fi";
 
 import type { ProductColor } from "@/lib/products";
@@ -16,6 +16,7 @@ const presetColors = [
 
 type ColorFieldsProps = {
   defaultColors?: ProductColor[];
+  savedColors?: ProductColor[];
 };
 
 function getInitialColors(defaultColors: ProductColor[]) {
@@ -30,14 +31,50 @@ function getInitialColors(defaultColors: ProductColor[]) {
   return [{ id: "color-1", name: "", swatch: "#17345c" }];
 }
 
+function getNormalizedSwatch(value: string) {
+  return /^#[0-9a-fA-F]{6}$/.test(value.trim()) ? value.trim() : "#17345c";
+}
+
+function getColorKey(color: ProductColor) {
+  return `${color.name.trim().toLowerCase()}::${getNormalizedSwatch(color.swatch).toLowerCase()}`;
+}
+
 export default function ColorFields({
   defaultColors = [],
+  savedColors = [],
 }: ColorFieldsProps) {
   const [colors, setColors] = useState(() => getInitialColors(defaultColors));
   const [draftName, setDraftName] = useState("");
   const [draftSwatch, setDraftSwatch] = useState("#17345c");
   const [editingId, setEditingId] = useState<string | null>(null);
   const nextIdRef = useRef(colors.length + 1);
+  const reusableColors = useMemo(() => {
+    const uniqueColors = new Map<string, ProductColor>();
+
+    [
+      ...presetColors.map((preset) => ({
+        name: preset.label,
+        swatch: preset.value,
+      })),
+      ...savedColors,
+      ...defaultColors,
+    ].forEach((color) => {
+      const name = color.name.trim();
+
+      if (!name) {
+        return;
+      }
+
+      const normalizedColor = {
+        name,
+        swatch: getNormalizedSwatch(color.swatch),
+      };
+
+      uniqueColors.set(getColorKey(normalizedColor), normalizedColor);
+    });
+
+    return Array.from(uniqueColors.values());
+  }, [defaultColors, savedColors]);
 
   function resetDraft() {
     setDraftName("");
@@ -48,6 +85,33 @@ export default function ColorFields({
   function applyPreset(preset: { label: string; value: string }) {
     setDraftName((current) => (current.trim() ? current : preset.label));
     setDraftSwatch(preset.value);
+  }
+
+  function addColorToList(color: ProductColor) {
+    const normalizedName = color.name.trim();
+
+    if (!normalizedName) {
+      return;
+    }
+
+    const normalizedColor = {
+      name: normalizedName,
+      swatch: getNormalizedSwatch(color.swatch),
+    };
+    const existingColor = colors.find(
+      (item) => getColorKey(item) === getColorKey(normalizedColor)
+    );
+
+    if (existingColor) {
+      selectColorForEditing(existingColor.id);
+      return;
+    }
+
+    const nextId = `color-${nextIdRef.current}`;
+    nextIdRef.current += 1;
+
+    setColors((current) => [...current, { id: nextId, ...normalizedColor }]);
+    resetDraft();
   }
 
   function saveDraftColor() {
@@ -61,7 +125,11 @@ export default function ColorFields({
       setColors((current) =>
         current.map((color) =>
           color.id === editingId
-            ? { ...color, name: normalizedName, swatch: draftSwatch }
+            ? {
+                ...color,
+                name: normalizedName,
+                swatch: getNormalizedSwatch(draftSwatch),
+              }
             : color
         )
       );
@@ -69,14 +137,7 @@ export default function ColorFields({
       return;
     }
 
-    const nextId = `color-${nextIdRef.current}`;
-    nextIdRef.current += 1;
-
-    setColors((current) => [
-      ...current,
-      { id: nextId, name: normalizedName, swatch: draftSwatch },
-    ]);
-    resetDraft();
+    addColorToList({ name: normalizedName, swatch: draftSwatch });
   }
 
   function selectColorForEditing(id: string) {
@@ -144,6 +205,42 @@ export default function ColorFields({
           </button>
         ))}
       </div>
+
+      {reusableColors.length > 0 && (
+        <div className="mt-5">
+          <p className="text-sm font-semibold text-[#17345c]">Cores salvas</p>
+          <p className="mt-1 text-[13px] leading-6 text-[#68788a]">
+            Clique em uma cor para reutilizar em outros produtos.
+          </p>
+
+          <div className="mt-3 flex flex-wrap gap-2">
+            {reusableColors.map((color) => {
+              const alreadyAdded = colors.some(
+                (item) => getColorKey(item) === getColorKey(color)
+              );
+
+              return (
+                <button
+                  key={getColorKey(color)}
+                  type="button"
+                  onClick={() => addColorToList(color)}
+                  className={`inline-flex items-center gap-2 rounded-full border px-3.5 py-2 text-xs font-semibold uppercase tracking-[0.18em] transition-colors ${
+                    alreadyAdded
+                      ? "border-[#17345c] bg-[#f2f7fc] text-[#17345c]"
+                      : "border-[#dfd5ca] bg-white text-[#17345c] hover:border-[#17345c]"
+                  }`}
+                >
+                  <span
+                    className="block size-4 rounded-full border border-black/10"
+                    style={{ backgroundColor: color.swatch }}
+                  />
+                  <span>{color.name}</span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
 
       <div className="mt-5 rounded-2xl border border-[#ece3da] bg-[#fcfbfa] p-4">
         <div className="grid gap-5 md:grid-cols-[1fr_180px_160px_auto]">

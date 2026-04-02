@@ -5,6 +5,7 @@ import { useEffect, useRef, useState } from "react";
 import { FiCreditCard } from "react-icons/fi";
 import { FaWhatsapp } from "react-icons/fa6";
 import { SiPix } from "react-icons/si";
+import { shouldDisableImageOptimization } from "@/lib/image-utils";
 import {
   calculatePixPrice,
   defaultInstallmentsLabel,
@@ -125,6 +126,7 @@ export default function AdminProductLivePreview({
 }: PreviewProps) {
   const [preview, setPreview] = useState<PreviewState>(initialState);
   const objectUrlRef = useRef<string | null>(null);
+  const objectUrlKeyRef = useRef<string | null>(null);
 
   useEffect(() => {
     const form = document.getElementById(formId);
@@ -138,14 +140,23 @@ export default function AdminProductLivePreview({
       const mainImage = formData.get("mainImage");
       let imageUrl = fallbackImageUrl;
 
-      if (objectUrlRef.current) {
+      if (mainImage instanceof File && mainImage.size > 0) {
+        const fileKey = `${mainImage.name}-${mainImage.size}-${mainImage.lastModified}`;
+
+        if (objectUrlKeyRef.current !== fileKey) {
+          if (objectUrlRef.current) {
+            URL.revokeObjectURL(objectUrlRef.current);
+          }
+
+          objectUrlRef.current = URL.createObjectURL(mainImage);
+          objectUrlKeyRef.current = fileKey;
+        }
+
+        imageUrl = objectUrlRef.current ?? fallbackImageUrl;
+      } else if (objectUrlRef.current) {
         URL.revokeObjectURL(objectUrlRef.current);
         objectUrlRef.current = null;
-      }
-
-      if (mainImage instanceof File && mainImage.size > 0) {
-        imageUrl = URL.createObjectURL(mainImage);
-        objectUrlRef.current = imageUrl;
+        objectUrlKeyRef.current = null;
       }
 
       const sizes = parseSizes(formData.get("sizes"));
@@ -195,6 +206,8 @@ export default function AdminProductLivePreview({
 
       if (objectUrlRef.current) {
         URL.revokeObjectURL(objectUrlRef.current);
+        objectUrlRef.current = null;
+        objectUrlKeyRef.current = null;
       }
     };
   }, [fallbackImageUrl, formId, primaryOptions, productOptions]);
@@ -222,6 +235,9 @@ export default function AdminProductLivePreview({
             alt={preview.name}
             width={620}
             height={760}
+            sizes="360px"
+            decoding="async"
+            unoptimized={shouldDisableImageOptimization(preview.imageUrl)}
             className="h-[295px] w-full object-cover"
           />
         </div>

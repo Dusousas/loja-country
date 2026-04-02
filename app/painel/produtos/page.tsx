@@ -10,6 +10,7 @@ import { requireAdminAuthentication } from "@/lib/admin-auth";
 import {
   getAdminDashboardSummary,
   getAdminProductCatalog,
+  getReusableProductColors,
   panelPrimaryCategoryOptions,
   panelProductCategoryOptions,
 } from "@/lib/products";
@@ -52,7 +53,7 @@ export default async function ProductAdminPage({
       ? Math.floor(requestedPage)
       : 1;
 
-  const [summary, catalog, announcementMessages] = await Promise.all([
+  const [summary, catalog, announcementMessages, savedColors] = await Promise.all([
     getAdminDashboardSummary(),
     getAdminProductCatalog({
       page,
@@ -60,6 +61,7 @@ export default async function ProductAdminPage({
       query,
     }),
     getAnnouncementMessages(),
+    getReusableProductColors(),
   ]);
 
   return (
@@ -395,7 +397,7 @@ export default async function ProductAdminPage({
                     <AdminPricingDefaults formId="product-create-form" />
                   </div>
 
-                  <ColorFields />
+                  <ColorFields savedColors={savedColors} />
 
                   <label className="mt-5 block">
                     <span className="mb-2 block text-sm font-semibold text-[#17345c]">

@@ -8,9 +8,10 @@ import AdminPricingDefaults from "@/components/admin/AdminPricingDefaults";
 import ColorFields from "@/components/admin/ColorFields";
 import SubmitButton from "@/components/admin/SubmitButton";
 import { requireAdminAuthentication } from "@/lib/admin-auth";
-import { isUploadedImage } from "@/lib/image-utils";
+import { shouldDisableImageOptimization } from "@/lib/image-utils";
 import {
   getAdminProductById,
+  getReusableProductColors,
   panelPrimaryCategoryOptions,
   panelProductCategoryOptions,
 } from "@/lib/products";
@@ -61,7 +62,10 @@ export default async function EditProductPage({
     notFound();
   }
 
-  const product = await getAdminProductById(parsedId);
+  const [product, savedColors] = await Promise.all([
+    getAdminProductById(parsedId),
+    getReusableProductColors(),
+  ]);
 
   if (!product) {
     notFound();
@@ -255,7 +259,7 @@ export default async function EditProductPage({
                           alt={product.name}
                           width={180}
                           height={220}
-                          unoptimized={isUploadedImage(product.image)}
+                          unoptimized={shouldDisableImageOptimization(product.image)}
                           className="h-[160px] w-[132px] object-cover"
                         />
                       </div>
@@ -310,7 +314,7 @@ export default async function EditProductPage({
                               alt={`Imagem adicional de ${product.name}`}
                               width={220}
                               height={220}
-                              unoptimized={isUploadedImage(image)}
+                              unoptimized={shouldDisableImageOptimization(image)}
                               className="aspect-square h-auto w-full object-cover"
                             />
                           </div>
@@ -349,7 +353,7 @@ export default async function EditProductPage({
                   <AdminPricingDefaults formId="product-edit-form" />
                 </div>
 
-                <ColorFields defaultColors={product.colors} />
+                <ColorFields defaultColors={product.colors} savedColors={savedColors} />
 
                 <label className="mt-5 block">
                   <span className="mb-2 block text-sm font-semibold text-[#17345c]">

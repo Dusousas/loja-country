@@ -2,11 +2,12 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import type { CSSProperties } from "react";
 import { useEffect, useMemo, useState } from "react";
 import { FiChevronRight, FiCreditCard, FiFilter, FiX } from "react-icons/fi";
 import { FaWhatsapp } from "react-icons/fa6";
 import { SiPix } from "react-icons/si";
-import { isUploadedImage } from "@/lib/image-utils";
+import { shouldDisableImageOptimization } from "@/lib/image-utils";
 import type { CategoryDefinition, Product } from "@/lib/products";
 
 type CategoryListingViewProps = {
@@ -381,6 +382,12 @@ export default function CategoryListingView({
                 <article
                   key={product.slug}
                   className="flex h-full w-full max-w-[238px] flex-col overflow-hidden border border-[#d8d8d8] bg-white p-2.5 shadow-[0_4px_14px_rgba(23,23,23,0.035)] md:max-w-[238px]"
+                  style={
+                    {
+                      contentVisibility: "auto",
+                      containIntrinsicSize: "430px 238px",
+                    } as CSSProperties
+                  }
                 >
                   <Link
                     href={`/produtos/${product.slug}`}
@@ -391,7 +398,9 @@ export default function CategoryListingView({
                       alt={product.name}
                       width={620}
                       height={760}
-                      unoptimized={isUploadedImage(product.image)}
+                      sizes="(max-width: 768px) 45vw, (max-width: 1536px) 238px, 214px"
+                      decoding="async"
+                      unoptimized={shouldDisableImageOptimization(product.image)}
                       className="h-[214px] w-full object-cover sm:h-[230px] xl:h-[214px]"
                     />
                   </Link>

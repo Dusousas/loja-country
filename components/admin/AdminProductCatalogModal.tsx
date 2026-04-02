@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import SubmitButton from "@/components/admin/SubmitButton";
 import { deleteProductFromPanel, toggleHomeSectionFromPanel } from "@/app/painel/produtos/actions";
-import { isUploadedImage } from "@/lib/image-utils";
+import { shouldDisableImageOptimization } from "@/lib/image-utils";
 import type { AdminProduct, HomeSection } from "@/lib/products";
 
 type CatalogProps = {
@@ -237,7 +237,7 @@ export default function AdminProductCatalogModal({
                                 src={product.image}
                                 alt={product.name}
                                 fill
-                                unoptimized={isUploadedImage(product.image)}
+                                unoptimized={shouldDisableImageOptimization(product.image)}
                                 className="object-cover"
                               />
                             </div>
@@ -318,7 +318,7 @@ export default function AdminProductCatalogModal({
                           alt={selectedProduct.name}
                           width={720}
                           height={900}
-                          unoptimized={isUploadedImage(selectedProduct.image)}
+                          unoptimized={shouldDisableImageOptimization(selectedProduct.image)}
                           className="h-[260px] w-full object-cover sm:h-[340px]"
                         />
                       </div>

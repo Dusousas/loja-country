@@ -2,11 +2,12 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import type { CSSProperties } from "react";
 import { useEffect, useRef, useState } from "react";
 import { FiChevronLeft, FiChevronRight, FiCreditCard } from "react-icons/fi";
 import { FaWhatsapp } from "react-icons/fa6";
 import { SiPix } from "react-icons/si";
-import { isUploadedImage } from "@/lib/image-utils";
+import { shouldDisableImageOptimization } from "@/lib/image-utils";
 
 type HomeProductShelfProduct = {
   slug: string;
@@ -34,7 +35,7 @@ export default function HomeProductShelf({
   useEffect(() => {
     const track = trackRef.current;
 
-    if (!track || products.length <= 1) {
+    if (!track || products.length <= 1 || track.scrollWidth <= track.clientWidth) {
       return;
     }
 
@@ -59,7 +60,7 @@ export default function HomeProductShelf({
       },
       {
         root: track,
-        threshold: [0.6, 0.75, 0.9],
+        threshold: 0.75,
       }
     );
 
@@ -138,6 +139,12 @@ export default function HomeProductShelf({
             <article
               key={product.slug}
               className="flex h-full w-[84vw] max-w-[320px] shrink-0 snap-start flex-col border border-[#d8d8d8] bg-white p-3 shadow-[0_6px_18px_rgba(23,23,23,0.04)] sm:w-[320px]"
+              style={
+                {
+                  contentVisibility: "auto",
+                  containIntrinsicSize: "560px 320px",
+                } as CSSProperties
+              }
             >
               <Link
                 href={`/produtos/${product.slug}`}
@@ -148,7 +155,9 @@ export default function HomeProductShelf({
                   alt={product.name}
                   width={620}
                   height={760}
-                  unoptimized={isUploadedImage(product.image)}
+                  sizes="(max-width: 640px) 84vw, 320px"
+                  decoding="async"
+                  unoptimized={shouldDisableImageOptimization(product.image)}
                   className="h-[295px] w-full object-cover sm:h-[340px] xl:h-[295px]"
                 />
               </Link>
