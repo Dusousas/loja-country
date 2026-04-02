@@ -2,6 +2,7 @@
 
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
+import { assertDatabaseConfigured } from "@/lib/db";
 import { clearAdminSession, requireAdminAuthentication } from "@/lib/admin-auth";
 import {
   createProduct,
@@ -93,6 +94,8 @@ export async function createProductFromPanel(formData: FormData) {
   let redirectPath = "";
 
   try {
+    assertDatabaseConfigured();
+
     const name = getString(formData, "name");
     const brand = getString(formData, "brand");
     const mainImageFile = formData.get("mainImage");
@@ -145,6 +148,8 @@ export async function toggleHomeSectionFromPanel(formData: FormData) {
   let redirectPath = "";
 
   try {
+    assertDatabaseConfigured();
+
     const productId = Number(getString(formData, "productId"));
     const section = getString(formData, "section") as HomeSection;
     const enabled = getString(formData, "enabled") === "true";
@@ -180,6 +185,8 @@ export async function deleteProductFromPanel(formData: FormData) {
   let redirectPath = "";
 
   try {
+    assertDatabaseConfigured();
+
     const productId = Number(getString(formData, "productId"));
 
     if (!Number.isFinite(productId) || productId <= 0) {
@@ -216,6 +223,8 @@ export async function updateAnnouncementMessagesFromPanel(formData: FormData) {
   let redirectPath = "";
 
   try {
+    assertDatabaseConfigured();
+
     const messages = getString(formData, "announcementMessages")
       .split(/\r?\n/)
       .map((item) => item.trim())
@@ -245,6 +254,8 @@ export async function updateProductFromPanel(formData: FormData) {
   let redirectPath = "";
 
   try {
+    assertDatabaseConfigured();
+
     const productId = Number(getString(formData, "productId"));
 
     if (!Number.isFinite(productId) || productId <= 0) {

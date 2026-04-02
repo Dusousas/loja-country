@@ -1,4 +1,8 @@
-import { getDbPool } from "@/lib/db";
+import {
+  assertDatabaseConfigured,
+  getDbPool,
+  isDatabaseConfigured,
+} from "@/lib/db";
 
 const defaultAnnouncementMessages = [
   "Frete gratis para todo o Brasil",
@@ -9,6 +13,10 @@ const defaultAnnouncementMessages = [
 let siteSettingsReadyPromise: Promise<void> | null = null;
 
 async function ensureSiteSettingsReady() {
+  if (!isDatabaseConfigured()) {
+    return;
+  }
+
   if (!siteSettingsReadyPromise) {
     siteSettingsReadyPromise = (async () => {
       const pool = getDbPool();
@@ -45,6 +53,10 @@ function normalizeMessages(messages: string[]) {
 }
 
 export async function getAnnouncementMessages() {
+  if (!isDatabaseConfigured()) {
+    return defaultAnnouncementMessages;
+  }
+
   await ensureSiteSettingsReady();
 
   const result = await getDbPool().query<{
@@ -61,6 +73,7 @@ export async function getAnnouncementMessages() {
 }
 
 export async function updateAnnouncementMessages(messages: string[]) {
+  assertDatabaseConfigured();
   await ensureSiteSettingsReady();
 
   const nextMessages = normalizeMessages(messages);

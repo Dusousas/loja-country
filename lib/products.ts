@@ -1,5 +1,9 @@
 import type { PoolClient } from "pg";
-import { getDbPool } from "@/lib/db";
+import {
+  assertDatabaseConfigured,
+  getDbPool,
+  isDatabaseConfigured,
+} from "@/lib/db";
 import {
   calculatePixPrice,
   defaultInstallmentsLabel,
@@ -550,6 +554,73 @@ function rowToAdminProduct(row: Record<string, unknown>): AdminProduct {
   };
 }
 
+function productMatchesQuery(product: Product, query: string) {
+  const normalizedQuery = normalizeSearchTerm(query).toLowerCase();
+
+  if (!normalizedQuery) {
+    return true;
+  }
+
+  const searchableFields = [
+    product.name,
+    product.brand,
+    product.slug,
+    product.category,
+    product.description,
+    product.categoryTrail.join(" "),
+  ];
+
+  return searchableFields.some((value) =>
+    value.toLowerCase().includes(normalizedQuery)
+  );
+}
+
+function getFallbackHomeProducts(section: HomeSection) {
+  if (section === "promocoes") {
+    return defaultProducts.slice(0, 4);
+  }
+
+  if (section === "chapeus") {
+    return defaultProducts
+      .filter((product) =>
+        product.navGroups.some((group) =>
+          ["chapeus", "bones", "acessorios"].includes(group)
+        )
+      )
+      .slice(0, 4);
+  }
+
+  return defaultProducts
+    .filter((product) => product.navGroups.includes("infantil"))
+    .slice(0, 4);
+}
+
+function getFallbackHomeSections(product: Product): HomeSection[] {
+  return (Object.keys(homeSectionColumns) as HomeSection[]).filter((section) =>
+    getFallbackHomeProducts(section).some(
+      (fallbackProduct) => fallbackProduct.slug === product.slug
+    )
+  );
+}
+
+function toFallbackAdminProduct(product: Product, index: number): AdminProduct {
+  const timestamp = new Date(Date.UTC(2026, 0, index + 1)).toISOString();
+
+  return {
+    id: index + 1,
+    ...product,
+    homeSections: getFallbackHomeSections(product),
+    createdAt: timestamp,
+    updatedAt: timestamp,
+  };
+}
+
+function getFallbackAdminProducts() {
+  return defaultProducts.map((product, index) =>
+    toFallbackAdminProduct(product, index)
+  );
+}
+
 async function pruneHomeSection(client: PoolClient, section: HomeSection) {
   const columns = homeSectionColumns[section];
 
@@ -636,6 +707,10 @@ async function queryProducts<T>(callback: (client: PoolClient) => Promise<T>) {
 }
 
 export async function getAdminProducts() {
+  if (!isDatabaseConfigured()) {
+    return getFallbackAdminProducts();
+  }
+
   return queryProducts(async (client) => {
     const result = await client.query("SELECT * FROM products ORDER BY created_at DESC, id DESC");
     return result.rows.map((row) => rowToAdminProduct(row));
@@ -643,6 +718,10 @@ export async function getAdminProducts() {
 }
 
 export async function getAdminProductById(productId: number) {
+  if (!isDatabaseConfigured()) {
+    return getFallbackAdminProducts().find((product) => product.id === productId);
+  }
+
   return queryProducts(async (client) => {
     const result = await client.query("SELECT * FROM products WHERE id = $1 LIMIT 1", [
       productId,
@@ -653,6 +732,25 @@ export async function getAdminProductById(productId: number) {
 }
 
 export async function getAdminDashboardSummary(): Promise<AdminDashboardSummary> {
+  if (!isDatabaseConfigured()) {
+    const products = getFallbackAdminProducts();
+
+    return {
+      totalProducts: products.length,
+      showcaseCounts: {
+        promocoes: products.filter((product) =>
+          product.homeSections.includes("promocoes")
+        ).length,
+        chapeus: products.filter((product) =>
+          product.homeSections.includes("chapeus")
+        ).length,
+        infantil: products.filter((product) =>
+          product.homeSections.includes("infantil")
+        ).length,
+      },
+    };
+  }
+
   return queryProducts(async (client) => {
     const result = await client.query<{
       total_products: string;
@@ -686,6 +784,29 @@ export async function getAdminProductCatalog(options?: {
   pageSize?: number;
   query?: string;
 }): Promise<AdminProductCatalogResult> {
+  if (!isDatabaseConfigured()) {
+    const requestedPageSize = Math.trunc(options?.pageSize ?? 8);
+    const pageSize = Math.min(Math.max(requestedPageSize || 8, 1), 24);
+    const query = normalizeSearchTerm(options?.query ?? "");
+    const filteredProducts = getFallbackAdminProducts().filter((product) =>
+      productMatchesQuery(product, query)
+    );
+    const totalCount = filteredProducts.length;
+    const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
+    const requestedPage = Math.max(Math.trunc(options?.page ?? 1) || 1, 1);
+    const page = Math.min(requestedPage, totalPages);
+    const offset = (page - 1) * pageSize;
+
+    return {
+      products: filteredProducts.slice(offset, offset + pageSize),
+      page,
+      pageSize,
+      totalCount,
+      totalPages,
+      query,
+    };
+  }
+
   return queryProducts(async (client) => {
     const requestedPageSize = Math.trunc(options?.pageSize ?? 8);
     const pageSize = Math.min(Math.max(requestedPageSize || 8, 1), 24);
@@ -750,6 +871,11 @@ export async function getAllProducts() {
 }
 
 export async function getCatalogProducts(options?: { query?: string }) {
+  if (!isDatabaseConfigured()) {
+    const query = normalizeSearchTerm(options?.query ?? "");
+    return defaultProducts.filter((product) => productMatchesQuery(product, query));
+  }
+
   return queryProducts(async (client) => {
     const query = normalizeSearchTerm(options?.query ?? "");
     const values: string[] = [];
@@ -785,6 +911,10 @@ export async function getCatalogProducts(options?: { query?: string }) {
 }
 
 export async function getHomeFeaturedProducts(section: HomeSection) {
+  if (!isDatabaseConfigured()) {
+    return getFallbackHomeProducts(section);
+  }
+
   return queryProducts(async (client) => {
     const columns = homeSectionColumns[section];
     const result = await client.query(
@@ -802,6 +932,10 @@ export async function getHomeFeaturedProducts(section: HomeSection) {
 }
 
 export async function getProductBySlug(slug: string) {
+  if (!isDatabaseConfigured()) {
+    return defaultProducts.find((product) => product.slug === slug);
+  }
+
   return queryProducts(async (client) => {
     const result = await client.query("SELECT * FROM products WHERE slug = $1 LIMIT 1", [slug]);
     return result.rows[0] ? rowToProduct(result.rows[0]) : undefined;
@@ -813,6 +947,10 @@ export function getCategoryBySlug(slug: string) {
 }
 
 export async function getProductsForCategory(slug: CategorySlug) {
+  if (!isDatabaseConfigured()) {
+    return defaultProducts.filter((product) => product.navGroups.includes(slug));
+  }
+
   return queryProducts(async (client) => {
     const result = await client.query(
       "SELECT * FROM products WHERE nav_groups @> $1::jsonb ORDER BY created_at DESC, id DESC",
@@ -824,6 +962,8 @@ export async function getProductsForCategory(slug: CategorySlug) {
 }
 
 export async function createProduct(input: ProductFormInput) {
+  assertDatabaseConfigured();
+
   const brand = normalizeText(input.brand);
   const name = normalizeText(input.name);
   const slug = slugify(input.slug || name);
@@ -955,6 +1095,8 @@ export async function createProduct(input: ProductFormInput) {
 }
 
 export async function updateProduct(productId: number, input: ProductFormInput) {
+  assertDatabaseConfigured();
+
   const brand = normalizeText(input.brand);
   const name = normalizeText(input.name);
   const slug = slugify(input.slug || name);
@@ -1103,6 +1245,8 @@ export async function updateProductHomeSection(
   section: HomeSection,
   enabled: boolean
 ) {
+  assertDatabaseConfigured();
+
   return queryProducts(async (client) => {
     const columns = homeSectionColumns[section];
 
@@ -1131,6 +1275,8 @@ export async function updateProductHomeSection(
 }
 
 export async function deleteProduct(productId: number) {
+  assertDatabaseConfigured();
+
   return queryProducts(async (client) => {
     const result = await client.query(
       "DELETE FROM products WHERE id = $1 RETURNING *",
